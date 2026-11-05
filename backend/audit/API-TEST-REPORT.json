@@ -1,0 +1,1356 @@
+{
+  "testedAt": "2026-11-04T04:49:29.682644+00:00",
+  "api": "http://127.0.0.1:8000",
+  "result": "PASS",
+  "error": null,
+  "checks": [
+    {
+      "check": "GET /api/health",
+      "method": "GET",
+      "endpoint": "/api/health",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/db-health",
+      "method": "GET",
+      "endpoint": "/api/db-health",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/customers",
+      "method": "GET",
+      "endpoint": "/api/customers",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/leads",
+      "method": "GET",
+      "endpoint": "/api/leads",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/follow-ups",
+      "method": "GET",
+      "endpoint": "/api/follow-ups",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations",
+      "method": "GET",
+      "endpoint": "/api/quotations",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/customers/{customer_id}",
+      "method": "PUT",
+      "endpoint": "/api/customers/{customer_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/customers/{customer_id}",
+      "method": "GET",
+      "endpoint": "/api/customers/{customer_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/leads/{lead_id}",
+      "method": "PUT",
+      "endpoint": "/api/leads/{lead_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/leads/{lead_id}",
+      "method": "GET",
+      "endpoint": "/api/leads/{lead_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/customers/{customer_id}",
+      "method": "PUT",
+      "endpoint": "/api/customers/{customer_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/customers/{customer_id}",
+      "method": "GET",
+      "endpoint": "/api/customers/{customer_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/leads/{lead_id}",
+      "method": "PUT",
+      "endpoint": "/api/leads/{lead_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/leads/{lead_id}",
+      "method": "GET",
+      "endpoint": "/api/leads/{lead_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/customers/{customer_id}",
+      "method": "PUT",
+      "endpoint": "/api/customers/{customer_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/customers/{customer_id}",
+      "method": "GET",
+      "endpoint": "/api/customers/{customer_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/leads/{lead_id}",
+      "method": "PUT",
+      "endpoint": "/api/leads/{lead_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/leads/{lead_id}",
+      "method": "GET",
+      "endpoint": "/api/leads/{lead_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/customers/{customer_id}",
+      "method": "PUT",
+      "endpoint": "/api/customers/{customer_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/customers/{customer_id}",
+      "method": "GET",
+      "endpoint": "/api/customers/{customer_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/leads/{lead_id}",
+      "method": "PUT",
+      "endpoint": "/api/leads/{lead_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/leads/{lead_id}",
+      "method": "GET",
+      "endpoint": "/api/leads/{lead_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/customers/{customer_id}",
+      "method": "PUT",
+      "endpoint": "/api/customers/{customer_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/customers/{customer_id}",
+      "method": "GET",
+      "endpoint": "/api/customers/{customer_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/leads/{lead_id}",
+      "method": "PUT",
+      "endpoint": "/api/leads/{lead_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/leads/{lead_id}",
+      "method": "GET",
+      "endpoint": "/api/leads/{lead_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/follow-ups/{follow_up_id}",
+      "method": "PUT",
+      "endpoint": "/api/follow-ups/{follow_up_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/follow-ups/{follow_up_id}",
+      "method": "GET",
+      "endpoint": "/api/follow-ups/{follow_up_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/follow-ups/{follow_up_id}",
+      "method": "PUT",
+      "endpoint": "/api/follow-ups/{follow_up_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/follow-ups/{follow_up_id}",
+      "method": "GET",
+      "endpoint": "/api/follow-ups/{follow_up_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/follow-ups/{follow_up_id}",
+      "method": "PUT",
+      "endpoint": "/api/follow-ups/{follow_up_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/follow-ups/{follow_up_id}",
+      "method": "GET",
+      "endpoint": "/api/follow-ups/{follow_up_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/follow-ups/{follow_up_id}",
+      "method": "GET",
+      "endpoint": "/api/follow-ups/{follow_up_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/follow-ups/{follow_up_id}",
+      "method": "GET",
+      "endpoint": "/api/follow-ups/{follow_up_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/follow-ups/upcoming",
+      "method": "GET",
+      "endpoint": "/api/follow-ups/upcoming",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/follow-ups/overdue",
+      "method": "GET",
+      "endpoint": "/api/follow-ups/overdue",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Due lists exclude completed follow-ups",
+      "passed": true
+    },
+    {
+      "check": "Seeded upcoming task is returned",
+      "passed": true
+    },
+    {
+      "check": "Seeded overdue task is returned",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Latest PDF has valid signature",
+      "passed": true
+    },
+    {
+      "check": "Latest PDF is readable",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-001 revision 1 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-001 revision 2 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PDF download attachment header",
+      "passed": true
+    },
+    {
+      "check": "PUT /api/quotations/{quotation_id}",
+      "method": "PUT",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Latest PDF has valid signature",
+      "passed": true
+    },
+    {
+      "check": "Latest PDF is readable",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-001 revision 1 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-001 revision 2 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PDF download attachment header",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Latest PDF has valid signature",
+      "passed": true
+    },
+    {
+      "check": "Latest PDF is readable",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-002 revision 1 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PDF download attachment header",
+      "passed": true
+    },
+    {
+      "check": "PUT /api/quotations/{quotation_id}",
+      "method": "PUT",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Latest PDF has valid signature",
+      "passed": true
+    },
+    {
+      "check": "Latest PDF is readable",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-002 revision 1 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PDF download attachment header",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Latest PDF has valid signature",
+      "passed": true
+    },
+    {
+      "check": "Latest PDF is readable",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-003 revision 1 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PDF download attachment header",
+      "passed": true
+    },
+    {
+      "check": "PUT /api/quotations/{quotation_id}",
+      "method": "PUT",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Latest PDF has valid signature",
+      "passed": true
+    },
+    {
+      "check": "Latest PDF is readable",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-003 revision 1 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PDF download attachment header",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Latest PDF has valid signature",
+      "passed": true
+    },
+    {
+      "check": "Latest PDF is readable",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-004 revision 1 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PDF download attachment header",
+      "passed": true
+    },
+    {
+      "check": "PUT /api/quotations/{quotation_id}",
+      "method": "PUT",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Latest PDF has valid signature",
+      "passed": true
+    },
+    {
+      "check": "Latest PDF is readable",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-004 revision 1 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PDF download attachment header",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Latest PDF has valid signature",
+      "passed": true
+    },
+    {
+      "check": "Latest PDF is readable",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-005 revision 1 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-005 revision 2 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PDF download attachment header",
+      "passed": true
+    },
+    {
+      "check": "PUT /api/quotations/{quotation_id}",
+      "method": "PUT",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Latest PDF has valid signature",
+      "passed": true
+    },
+    {
+      "check": "Latest PDF is readable",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-005 revision 1 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "QA-DEMO-005 revision 2 hash retained",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PDF download attachment header",
+      "passed": true
+    },
+    {
+      "check": "POST /api/customers",
+      "method": "POST",
+      "endpoint": "/api/customers",
+      "expectedStatus": 201,
+      "actualStatus": 201,
+      "passed": true
+    },
+    {
+      "check": "DELETE /api/customers/{customer_id}",
+      "method": "DELETE",
+      "endpoint": "/api/customers/{customer_id}",
+      "expectedStatus": 204,
+      "actualStatus": 204,
+      "passed": true
+    },
+    {
+      "check": "GET /api/customers/{customer_id}",
+      "method": "GET",
+      "endpoint": "/api/customers/{customer_id}",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "passed": true
+    },
+    {
+      "check": "POST /api/leads",
+      "method": "POST",
+      "endpoint": "/api/leads",
+      "expectedStatus": 201,
+      "actualStatus": 201,
+      "passed": true
+    },
+    {
+      "check": "DELETE /api/leads/{lead_id}",
+      "method": "DELETE",
+      "endpoint": "/api/leads/{lead_id}",
+      "expectedStatus": 204,
+      "actualStatus": 204,
+      "passed": true
+    },
+    {
+      "check": "GET /api/leads/{lead_id}",
+      "method": "GET",
+      "endpoint": "/api/leads/{lead_id}",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "passed": true
+    },
+    {
+      "check": "POST /api/follow-ups",
+      "method": "POST",
+      "endpoint": "/api/follow-ups",
+      "expectedStatus": 201,
+      "actualStatus": 201,
+      "passed": true
+    },
+    {
+      "check": "DELETE /api/follow-ups/{follow_up_id}",
+      "method": "DELETE",
+      "endpoint": "/api/follow-ups/{follow_up_id}",
+      "expectedStatus": 204,
+      "actualStatus": 204,
+      "passed": true
+    },
+    {
+      "check": "GET /api/follow-ups/{follow_up_id}",
+      "method": "GET",
+      "endpoint": "/api/follow-ups/{follow_up_id}",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "passed": true
+    },
+    {
+      "check": "POST /api/quotations",
+      "method": "POST",
+      "endpoint": "/api/quotations",
+      "expectedStatus": 201,
+      "actualStatus": 201,
+      "passed": true
+    },
+    {
+      "check": "POST /api/quotations/{quotation_id}/revisions",
+      "method": "POST",
+      "endpoint": "/api/quotations/{quotation_id}/revisions",
+      "expectedStatus": 201,
+      "actualStatus": 201,
+      "passed": true
+    },
+    {
+      "check": "DELETE /api/quotations/{quotation_id}",
+      "method": "DELETE",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 204,
+      "actualStatus": 204,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "passed": true
+    },
+    {
+      "check": "POST /api/quotations/upload",
+      "method": "POST",
+      "endpoint": "/api/quotations/upload",
+      "expectedStatus": 201,
+      "actualStatus": 201,
+      "passed": true
+    },
+    {
+      "check": "DELETE /api/quotations/{quotation_id}",
+      "method": "DELETE",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 204,
+      "actualStatus": 204,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}/pdf",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}/pdf",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "passed": true
+    },
+    {
+      "check": "POST /api/leads",
+      "method": "POST",
+      "endpoint": "/api/leads",
+      "expectedStatus": 422,
+      "actualStatus": 422,
+      "passed": true
+    },
+    {
+      "check": "POST /api/customers",
+      "method": "POST",
+      "endpoint": "/api/customers",
+      "expectedStatus": 422,
+      "actualStatus": 422,
+      "passed": true
+    },
+    {
+      "check": "POST /api/follow-ups",
+      "method": "POST",
+      "endpoint": "/api/follow-ups",
+      "expectedStatus": 422,
+      "actualStatus": 422,
+      "passed": true
+    },
+    {
+      "check": "POST /api/quotations",
+      "method": "POST",
+      "endpoint": "/api/quotations",
+      "expectedStatus": 409,
+      "actualStatus": 409,
+      "passed": true
+    },
+    {
+      "check": "POST /api/quotations/upload",
+      "method": "POST",
+      "endpoint": "/api/quotations/upload",
+      "expectedStatus": 422,
+      "actualStatus": 422,
+      "passed": true
+    },
+    {
+      "check": "DELETE /api/leads/{lead_id}",
+      "method": "DELETE",
+      "endpoint": "/api/leads/{lead_id}",
+      "expectedStatus": 409,
+      "actualStatus": 409,
+      "passed": true
+    },
+    {
+      "check": "DELETE /api/customers/{customer_id}",
+      "method": "DELETE",
+      "endpoint": "/api/customers/{customer_id}",
+      "expectedStatus": 409,
+      "actualStatus": 409,
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations/{quotation_id}",
+      "method": "GET",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/quotations/{quotation_id}",
+      "method": "PUT",
+      "endpoint": "/api/quotations/{quotation_id}",
+      "expectedStatus": 409,
+      "actualStatus": 409,
+      "passed": true
+    },
+    {
+      "check": "GET /api/follow-ups/{follow_up_id}",
+      "method": "GET",
+      "endpoint": "/api/follow-ups/{follow_up_id}",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "PUT /api/follow-ups/{follow_up_id}",
+      "method": "PUT",
+      "endpoint": "/api/follow-ups/{follow_up_id}",
+      "expectedStatus": 409,
+      "actualStatus": 409,
+      "passed": true
+    },
+    {
+      "check": "GET /api/customers",
+      "method": "GET",
+      "endpoint": "/api/customers",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Existing customers records retained",
+      "passed": true
+    },
+    {
+      "check": "All five seeded customers records remain visible",
+      "passed": true
+    },
+    {
+      "check": "Exactly five labelled demo customers records",
+      "passed": true
+    },
+    {
+      "check": "GET /api/leads",
+      "method": "GET",
+      "endpoint": "/api/leads",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Existing leads records retained",
+      "passed": true
+    },
+    {
+      "check": "All five seeded leads records remain visible",
+      "passed": true
+    },
+    {
+      "check": "Exactly five labelled demo leads records",
+      "passed": true
+    },
+    {
+      "check": "GET /api/follow-ups",
+      "method": "GET",
+      "endpoint": "/api/follow-ups",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Existing followUps records retained",
+      "passed": true
+    },
+    {
+      "check": "All five seeded followUps records remain visible",
+      "passed": true
+    },
+    {
+      "check": "Exactly five labelled demo followUps records",
+      "passed": true
+    },
+    {
+      "check": "GET /api/quotations",
+      "method": "GET",
+      "endpoint": "/api/quotations",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true
+    },
+    {
+      "check": "Existing quotations records retained",
+      "passed": true
+    },
+    {
+      "check": "All five seeded quotations records remain visible",
+      "passed": true
+    },
+    {
+      "check": "Exactly five labelled demo quotations records",
+      "passed": true
+    },
+    {
+      "check": "All 28 implemented API endpoints exercised successfully; missing=[]",
+      "passed": true
+    }
+  ],
+  "checkCount": 172,
+  "passedChecks": 172,
+  "seededIds": {
+    "customers": [
+      "28e6fa37-85e1-42c8-b2a9-4459afdcf536",
+      "60fac4ea-a216-442c-9505-bda50be9dc95",
+      "71c8f318-29c5-474d-96de-b95e16615b31",
+      "383ffed3-81da-4fe8-bcf9-eb1efa2b6062",
+      "b22a2ddf-8621-4568-bf28-14e72afb88f3"
+    ],
+    "leads": [
+      "c0af1a9b-8570-4b74-bc55-734427f2e9d4",
+      "e6bc4191-f17b-44e9-a996-b76fe6415327",
+      "7f871d2c-9805-444a-b10c-35a4cc79b168",
+      "f973e876-f427-4789-9452-16153361a2da",
+      "695ac8ed-06c0-4629-aa8a-4a77dbf6b49a"
+    ],
+    "followUps": [
+      "9bcc119a-fb51-4b8f-a06c-9bb98802a33b",
+      "cf309c8a-8d40-4b2d-acdd-9ce8351fa3b6",
+      "85a091cf-4b0b-4a76-aa5e-b38a0aabc1aa",
+      "ba54d28a-84d0-420e-94cc-dd87d464a26a",
+      "9553a67a-10a5-495b-a127-539284fb51f3"
+    ],
+    "quotations": [
+      "c0a91334-3056-4112-b8cc-0db12866b1ad",
+      "6943b007-dfc2-4ba0-93b8-38f3865ed6f0",
+      "91082074-c13c-47ae-94f5-4ff1571e0560",
+      "b8f2f2ac-564c-42e6-92ca-9cd70abb6933",
+      "4afa9c63-5580-42ca-8e48-c857efd75413"
+    ]
+  },
+  "counts": {
+    "customers": {
+      "totalActive": 6,
+      "demoActive": 5
+    },
+    "leads": {
+      "totalActive": 6,
+      "demoActive": 5
+    },
+    "followUps": {
+      "totalActive": 5,
+      "demoActive": 5
+    },
+    "quotations": {
+      "totalActive": 5,
+      "demoActive": 5
+    }
+  },
+  "archivedDeleteChecks": {
+    "followUpId": "c993ac9e-2cd0-442f-99ed-4f943fa5d6a9",
+    "quotationIds": [
+      "27b9c527-b82a-4e41-a5ac-66d1dda1b464",
+      "93fac684-300c-4ce4-a2d3-accf2f584127"
+    ]
+  },
+  "coverage": [
+    {
+      "method": "DELETE",
+      "path": "/api/customers/{customer_id}",
+      "passed": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/follow-ups/{follow_up_id}",
+      "passed": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/leads/{lead_id}",
+      "passed": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/quotations/{quotation_id}",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/customers",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/customers/{customer_id}",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/db-health",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/follow-ups",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/follow-ups/overdue",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/follow-ups/upcoming",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/follow-ups/{follow_up_id}",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/leads",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/leads/{lead_id}",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/quotations",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/quotations/{quotation_id}",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/quotations/{quotation_id}/pdf",
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/quotations/{quotation_id}/versions/{version_id}/pdf",
+      "passed": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/customers",
+      "passed": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/follow-ups",
+      "passed": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/leads",
+      "passed": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/quotations",
+      "passed": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/quotations/upload",
+      "passed": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/quotations/{quotation_id}/revisions",
+      "passed": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/customers/{customer_id}",
+      "passed": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/follow-ups/{follow_up_id}",
+      "passed": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/leads/{lead_id}",
+      "passed": true
+    },
+    {
+      "method": "PUT",
+      "path": "/api/quotations/{quotation_id}",
+      "passed": true
+    }
+  ],
+  "pendingModules": [
+    "Reports",
+    "Authentication & Users",
+    "Settings",
+    "Notification delivery"
+  ],
+  "notes": [
+    "Only synthetic QA data was created/updated/deleted.",
+    "Five active demo records are retained per implemented module.",
+    "DELETE checks archive a temporary follow-up and two temporary quotations per run; their histories remain stored by design.",
+    "Pending modules have no implemented API routes to test.",
+    "No email, SMS or other external messages were sent."
+  ]
+}

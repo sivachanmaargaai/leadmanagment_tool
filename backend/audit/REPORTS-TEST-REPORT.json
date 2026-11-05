@@ -1,0 +1,261 @@
+{
+  "testedAt": "2026-11-04T05:06:12.627298+00:00",
+  "result": "PASS",
+  "error": null,
+  "scenarios": [
+    {
+      "name": "1. All-time reports reconcile with source APIs",
+      "passed": true
+    },
+    {
+      "name": "2. Include test data toggle",
+      "passed": true
+    },
+    {
+      "name": "3. Division filters for MMC, Nemilinks and ClearCode Labs",
+      "passed": true
+    },
+    {
+      "name": "4. IST date boundaries and module-specific dates",
+      "passed": true
+    },
+    {
+      "name": "5. Status, financial calculations and invalid inputs",
+      "passed": true
+    }
+  ],
+  "checks": [
+    {
+      "check": "GET /api/reports/summary {'includeTestData': 'true'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/leads {'includeTestData': 'true'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/sales {'includeTestData': 'true'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/follow-ups {'includeTestData': 'true'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "Live lead totals reconcile",
+      "passed": true
+    },
+    {
+      "check": "Live quotation totals reconcile",
+      "passed": true
+    },
+    {
+      "check": "Live follow-up totals reconcile",
+      "passed": true
+    },
+    {
+      "check": "Closed-lead conversion formula",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/summary {} returns 200",
+      "passed": true
+    },
+    {
+      "check": "Default summary excludes labelled test leads",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/leads {} returns 200",
+      "passed": true
+    },
+    {
+      "check": "Default leads excludes synthetic rows",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/sales {} returns 200",
+      "passed": true
+    },
+    {
+      "check": "Default sales excludes synthetic rows",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/follow-ups {} returns 200",
+      "passed": true
+    },
+    {
+      "check": "Default follow-ups excludes synthetic rows",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/summary {'includeTestData': 'true', 'division': 'MMC'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "MMC lead total",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/leads {'includeTestData': 'true', 'division': 'MMC'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "MMC leads scope",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/sales {'includeTestData': 'true', 'division': 'MMC'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "MMC sales scope",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/follow-ups {'includeTestData': 'true', 'division': 'MMC'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "MMC follow-ups scope",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/summary {'includeTestData': 'true', 'division': 'Nemilinks'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "Nemilinks lead total",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/leads {'includeTestData': 'true', 'division': 'Nemilinks'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "Nemilinks leads scope",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/sales {'includeTestData': 'true', 'division': 'Nemilinks'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "Nemilinks sales scope",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/follow-ups {'includeTestData': 'true', 'division': 'Nemilinks'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "Nemilinks follow-ups scope",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/summary {'includeTestData': 'true', 'division': 'ClearCode Labs'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "ClearCode Labs lead total",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/leads {'includeTestData': 'true', 'division': 'ClearCode Labs'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "ClearCode Labs leads scope",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/sales {'includeTestData': 'true', 'division': 'ClearCode Labs'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "ClearCode Labs sales scope",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/follow-ups {'includeTestData': 'true', 'division': 'ClearCode Labs'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "ClearCode Labs follow-ups scope",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/leads {'includeTestData': 'true', 'startDate': '2026-11-04', 'endDate': '2026-11-04'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "Lead created-date filtering in IST",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/sales {'includeTestData': 'true', 'startDate': '2026-11-04', 'endDate': '2026-11-04'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "Quotation issue-date filtering",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/follow-ups {'includeTestData': 'true', 'startDate': '2026-11-04', 'endDate': '2026-11-04'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "Follow-up due-date filtering in IST",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/leads {'includeTestData': 'true', 'status': 'Won'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "leads status filter",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/sales {'includeTestData': 'true', 'status': 'Expired'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "sales status filter",
+      "passed": true
+    },
+    {
+      "check": "GET /api/reports/follow-ups {'includeTestData': 'true', 'status': 'Completed'} returns 200",
+      "passed": true
+    },
+    {
+      "check": "follow-ups status filter",
+      "passed": true
+    },
+    {
+      "check": "Accepted amounts remain separate by currency and billing period",
+      "passed": true
+    },
+    {
+      "check": "Invalid summary filters rejected",
+      "passed": true
+    },
+    {
+      "check": "Invalid leads filters rejected",
+      "passed": true
+    },
+    {
+      "check": "Invalid sales filters rejected",
+      "passed": true
+    },
+    {
+      "check": "Invalid follow-ups filters rejected",
+      "passed": true
+    }
+  ],
+  "passedChecks": 57,
+  "checkCount": 57,
+  "dataChanged": false,
+  "browserVerification": "Not completed: Computer Use stopped because it could not verify the current Windows browser URL."
+}

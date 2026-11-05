@@ -1,0 +1,28 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node.js
+node_modules/
+dist/
+build/
+
+# Archive files
+*.rar
+*.zip
+*.7z
+
+# Local files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

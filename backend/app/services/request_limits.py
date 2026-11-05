@@ -1,0 +1,83 @@
+"""Worker-shared budgets. Own short transactions survive business-request rollback."""
+import hashlib
+import logging
+import math
+from datetime import datetime, timezone
+
+from fastapi import HTTPException
+from sqlalchemy import select, text
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+from sqlalchemy.exc import SQLAlchemyError
+
+from app.core.config import settings
+from app.db.database import SessionLocal
+from app.models.rate_limit import RateLimitBucket
+
+logger = logging.getLogger(__name__)
+
+
+def now():
+    return datetime.now(timezone.utc)
+
+
+def client_identity(scope):
+    # Uvicorn may replace this only when a proxy belongs to its explicit trusted list.
+    # Never parse arbitrary X-Forwarded-For / Forwarded headers here.
+    return str(scope.get("client", ("unknown", 0))[0]) if scope.get("client") else "unknown"
+
+
+def enforce_limits(budgets, message="Too many requests. Please try again later"):
+    if not settings.RATE_LIMIT_ENABLED:
+        return
+    at = now()
+    retry = 0
+    keyed = sorted((hashlib.sha256((scope + ":" + identity).encode()).hexdigest(), maximum, seconds)
+                   for scope, identity, maximum, seconds in budgets)
+    try:
+        with SessionLocal() as db:
+            if db.bind.dialect.name == "postgresql":
+                db.execute(text("SET LOCAL lock_timeout = '2s'"))
+                db.execute(text("SET LOCAL statement_timeout = '3s'"))
+            insert = pg_insert if db.bind.dialect.name == "postgresql" else sqlite_insert
+            for key, maximum, seconds in keyed:
+                db.execute(insert(RateLimitBucket).values(key=key, window_started_at=at, count=0)
+                           .on_conflict_do_nothing(index_elements=["key"]))
+                bucket = db.scalar(select(RateLimitBucket).where(RateLimitBucket.key == key)
+                                   .with_for_update().execution_options(populate_existing=True))
+                started = bucket.window_started_at
+                if started.tzinfo is None:
+                    started = started.replace(tzinfo=timezone.utc)
+                elapsed = (at - started).total_seconds()
+                if elapsed >= seconds:
+                    bucket.window_started_at, bucket.count = at, 0
+                    elapsed = 0
+                if bucket.count >= maximum:
+                    retry = max(retry, max(1, math.ceil(seconds - elapsed)))
+                else:
+                    bucket.count += 1
+            db.commit()
+    except SQLAlchemyError as error:
+        logger.warning("Request budget storage unavailable (%s)", type(error).__name__)
+        raise HTTPException(503, "Request protection temporarily unavailable. Please retry", headers={"Retry-After": "5", "Cache-Control": "no-store"}) from None
+    if retry:
+        raise HTTPException(429, message, headers={"Retry-After": str(retry), "Cache-Control": "no-store"})
+
+
+def enforce_ip_limits(scope):
+    identity = client_identity(scope)
+    enforce_limits([("api-ip-minute", identity, settings.API_IP_PER_MINUTE, 60),
+                    ("api-ip-burst", identity, settings.API_IP_BURST_PER_10_SECONDS, 10)])
+
+
+def enforce_login_limits(request, email):
+    enforce_limits([("login-ip", client_identity(request.scope), settings.LOGIN_IP_PER_15_MINUTES, 900),
+                    ("login-email", email, settings.LOGIN_EMAIL_PER_15_MINUTES, 900)],
+                   "Too many sign-in attempts. Please try again later")
+
+
+def enforce_user_limits(request, user_id):
+    budgets = [("api-user-minute", user_id, settings.API_USER_PER_MINUTE, 60)]
+    if request.method not in {"GET", "HEAD", "OPTIONS"}:
+        budgets.append(("api-user-writes", user_id, settings.API_USER_WRITES_PER_MINUTE, 60))
+    enforce_limits(budgets)
