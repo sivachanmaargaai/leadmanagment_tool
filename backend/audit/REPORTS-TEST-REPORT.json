@@ -12,7 +12,7 @@
       "passed": true
     },
     {
-      "name": "3. Division filters for MMC, Nemilinks and ClearCode Labs",
+      "name": "3. Division filters for MMC, nemilink and ClearCode Labs",
       "passed": true
     },
     {
@@ -122,35 +122,35 @@
       "passed": true
     },
     {
-      "check": "GET /api/reports/summary {'includeTestData': 'true', 'division': 'Nemilinks'} returns 200",
+      "check": "GET /api/reports/summary {'includeTestData': 'true', 'division': 'nemilink'} returns 200",
       "passed": true
     },
     {
-      "check": "Nemilinks lead total",
+      "check": "nemilink lead total",
       "passed": true
     },
     {
-      "check": "GET /api/reports/leads {'includeTestData': 'true', 'division': 'Nemilinks'} returns 200",
+      "check": "GET /api/reports/leads {'includeTestData': 'true', 'division': 'nemilink'} returns 200",
       "passed": true
     },
     {
-      "check": "Nemilinks leads scope",
+      "check": "nemilink leads scope",
       "passed": true
     },
     {
-      "check": "GET /api/reports/sales {'includeTestData': 'true', 'division': 'Nemilinks'} returns 200",
+      "check": "GET /api/reports/sales {'includeTestData': 'true', 'division': 'nemilink'} returns 200",
       "passed": true
     },
     {
-      "check": "Nemilinks sales scope",
+      "check": "nemilink sales scope",
       "passed": true
     },
     {
-      "check": "GET /api/reports/follow-ups {'includeTestData': 'true', 'division': 'Nemilinks'} returns 200",
+      "check": "GET /api/reports/follow-ups {'includeTestData': 'true', 'division': 'nemilink'} returns 200",
       "passed": true
     },
     {
-      "check": "Nemilinks follow-ups scope",
+      "check": "nemilink follow-ups scope",
       "passed": true
     },
     {

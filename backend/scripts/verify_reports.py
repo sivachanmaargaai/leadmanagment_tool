@@ -52,12 +52,12 @@ def main():
                 check(all(not is_test(x["customer"], x.get("number"), x.get("purpose")) for x in rows), f"Default {kind} excludes synthetic rows")
             scenarios.append({"name": "2. Include test data toggle", "passed": True})
             # 3. Each division must reconcile independently across all modules.
-            for division in ["MMC", "Nemilinks", "ClearCode Labs"]:
+            for division in ["MMC", "nemilink", "ClearCode Labs"]:
                 scoped = get("summary", includeTestData="true", division=division)
                 check(scoped["totals"]["totalLeads"] == sum(x["division"] == division for x in leads), f"{division} lead total")
                 for kind in ["leads", "sales", "follow-ups"]:
                     check(all(x["division"] == division for x in get(kind, includeTestData="true", division=division)["rows"]), f"{division} {kind} scope")
-            scenarios.append({"name": "3. Division filters for MMC, Nemilinks and ClearCode Labs", "passed": True})
+            scenarios.append({"name": "3. Division filters for MMC, nemilink and ClearCode Labs", "passed": True})
             # 4. Inclusive date boundaries use each report's documented IST date basis.
             today = datetime.now(IST).date().isoformat()
             expected = sum(datetime.fromisoformat(x["createdAt"].replace("Z", "+00:00")).astimezone(IST).date().isoformat() == today for x in leads)

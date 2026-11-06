@@ -1,4 +1,4 @@
-export const divisions = ["MMC", "Nemilinks", "ClearCode Labs"];
+export const divisions = ["MMC", "nemilink", "ClearCode Labs"];
 
 export const statuses = [
     "New",
@@ -27,7 +27,7 @@ export const initialLeads = [
         id: "LD-1001",
         customer: "Arun Industries",
         contact: "Arun Kumar",
-        division: "Nemilinks",
+        division: "nemilink",
         description: "Industrial IoT monitoring system",
         status: "In Progress",
         priority: "High",
@@ -63,7 +63,7 @@ export const initialLeads = [
         id: "LD-1005",
         customer: "Precision Controls",
         contact: "Suresh V",
-        division: "Nemilinks",
+        division: "nemilink",
         description: "Wireless sensor integration",
         status: "New",
         priority: "Low",

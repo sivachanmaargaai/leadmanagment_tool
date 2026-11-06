@@ -46,7 +46,7 @@ class ReportScenarioTests(unittest.TestCase):
         created = ["2026-10-31T18:29:59+00:00", "2026-10-31T18:30:00+00:00", "2026-11-01T12:00:00+00:00", "2026-11-05T00:00:00+00:00", "2026-11-06T00:00:00+00:00"]
         for i in range(5):
             self.db.add(Lead(id=f"L{i}", customer=f"Customer {i}" if i < 4 else "[QA TEST] Company",
-                division=["MMC", "Nemilinks", "Nemilinks", "ClearCode Labs", "MMC"][i], description="Embedded IoT",
+                division=["MMC", "nemilink", "nemilink", "ClearCode Labs", "MMC"][i], description="Embedded IoT",
                 status=["New", "Won", "Lost", "In Progress", "Follow-up"][i], priority=["High", "High", "Low", "Medium", "Medium"][i],
                 lead_source=["Website", "Referral", "Known Network", "Phone", "Website"][i],
                 referred_by={"name": "Ramesh", "email": "ref@example.test", "company": "Network"} if i in [1, 2] else None,
@@ -56,7 +56,7 @@ class ReportScenarioTests(unittest.TestCase):
             billing = ["One-time", "Monthly", "Yearly", "One-time", "One-time"][i]
             amount = [118, 59, 200, 40, 99][i]
             self.db.add(Quotation(id=f"Q{i}", number=f"QUOTE-{i}" if i < 4 else "QA-DEMO-005", number_key=f"quote-{i}",
-                customer=f"Customer {i}" if i < 4 else "[QA TEST] Company", division=["MMC", "Nemilinks", "Nemilinks", "ClearCode Labs", "MMC"][i],
+                customer=f"Customer {i}" if i < 4 else "[QA TEST] Company", division=["MMC", "nemilink", "nemilink", "ClearCode Labs", "MMC"][i],
                 status="Sent" if i == 3 else "Accepted", source="Created",
                 document={"date": "2026-11-01", "validUntil": "2026-11-03" if i == 3 else "2026-11-20",
                           "currency": ["INR", "INR", "USD", "INR", "EUR"][i],
@@ -88,7 +88,7 @@ class ReportScenarioTests(unittest.TestCase):
         summary = self.get("summary")
         self.assertEqual(summary["totals"]["totalLeads"], 4)
         self.assertEqual(summary["totals"]["conversionRate"], 50)
-        report = self.get("leads", startDate="2026-11-01", endDate="2026-11-01", division="Nemilinks")
+        report = self.get("leads", startDate="2026-11-01", endDate="2026-11-01", division="nemilink")
         self.assertEqual({x["id"] for x in report["rows"]}, {"L1", "L2"})
         self.assertEqual(len(report["referrals"]), 2)
         self.assertEqual(report["byDivision"][0]["conversionRate"], 50)

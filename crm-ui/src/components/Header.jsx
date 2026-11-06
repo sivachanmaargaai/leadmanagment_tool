@@ -84,7 +84,7 @@ export default function Header({ page, alerts, onMenu, user, onLogout, signingOu
                             </div>
 
                             <footer className="bg-slate-50 px-4 py-3 text-[11px] text-slate-600">
-                                {alertError || "Lead alerts, follow-up reminders & quotation expiry"}
+                                {alertError || "Up to 20 alerts per category · Open the register for all records"}
                             </footer>
                         </section>
                     )}

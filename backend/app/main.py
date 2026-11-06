@@ -12,6 +12,7 @@ from app.routers.operations import router as operations_router
 from app.core.security import get_current_user
 from app.routers.auth import router as auth_router
 from app.routers.users import router as users_router
+from app.routers.permissions import router as permissions_router
 from app.routers.settings import router as settings_router
 from app.routers.access import router as access_router
 from app.routers.leads import router as leads_router
@@ -20,6 +21,7 @@ from app.routers.followups import router as followups_router
 from app.routers.quotations import router as quotations_router
 from app.routers.reports import router as reports_router
 from app.routers.workspace import router as workspace_router
+from app.routers.customer_links import router as customer_links_router
 
 @asynccontextmanager
 async def lifespan(app):
@@ -37,6 +39,7 @@ app = FastAPI(
 )
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(permissions_router)
 app.include_router(settings_router)
 app.include_router(access_router)
 app.include_router(operations_router)
@@ -44,6 +47,7 @@ app.include_router(leads_router, dependencies=[Depends(get_current_user)])
 app.include_router(customers_router, dependencies=[Depends(get_current_user)])
 app.include_router(followups_router, dependencies=[Depends(get_current_user)])
 app.include_router(quotations_router, dependencies=[Depends(get_current_user)])
+app.include_router(customer_links_router, dependencies=[Depends(get_current_user)])
 app.include_router(workspace_router, dependencies=[Depends(get_current_user)])
 app.include_router(reports_router, dependencies=[Depends(get_current_user)])
 app.add_middleware(RequestGuardMiddleware)

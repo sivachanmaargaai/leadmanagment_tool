@@ -40,7 +40,7 @@ class QuotationHttpTests(unittest.TestCase):
         self.directory.cleanup()
 
     def document(self, **changes):
-        return {"number": "NEM-001", "customer": "Example Engineering", "division": "Nemilinks",
+        return {"number": "NEM-001", "customer": "Example Engineering", "division": "nemilink",
                 "contact": "Arun", "date": "2026-11-04", "validUntil": "2026-11-20", "tax": "18",
                 "items": [{"description": "IoT controller", "quantity": "2", "rate": "100.05", "billing": "One-time"},
                           {"description": "Cloud monitoring", "quantity": "1", "rate": "50.00", "billing": "Monthly"}],
@@ -190,7 +190,7 @@ class QuotationHttpTests(unittest.TestCase):
 
     def test_retained_quotation_blocks_customer_deletion_by_alias(self):
         customer = self.client.post("/api/customers", json={"name": "Renamed Company", "aliases": ["Example Engineering"],
-            "divisions": ["Nemilinks"], "contacts": [{"phone": "1234567890"}]}).json()
+            "divisions": ["nemilink"], "contacts": [{"phone": "1234567890"}]}).json()
         quote = self.create()
         self.client.delete(f"/api/quotations/{quote['id']}?expectedVersion=1")
         self.assertEqual(self.client.delete(f"/api/customers/{customer['id']}?expectedVersion={customer['version']}").status_code, 409)

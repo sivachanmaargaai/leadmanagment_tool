@@ -43,7 +43,14 @@ class ResetPasswordRequest(BaseModel):
     newPassword: str = Field(min_length=8, max_length=128)
 
 
+class VerifyRecoveryOtpRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    challengeId: str = Field(min_length=43, max_length=128, pattern=r"^[A-Za-z0-9_-]+$")
+    code: str = Field(pattern=r"^[0-9]{6}$")
+
+
 class UserResponse(ApiModel):
+    can_access_quotations: bool = Field(alias="canAccessQuotations")
     id: str
     email: str
     name: str

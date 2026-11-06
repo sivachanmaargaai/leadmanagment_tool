@@ -4,7 +4,8 @@ from decimal import Decimal
 
 from sqlalchemy import select
 
-from app.services.crm_access import scoped, follow_assignee_name
+from app.services.crm_access import scoped, follow_assignee_name, actor
+from app.services.permissions import quotations_allowed
 from app.models.lead import Lead
 from app.models.follow_up import FollowUp
 from app.models.quotation import Quotation
@@ -38,6 +39,8 @@ def effective_status(item, today):
 
 
 def quote_rows(db, filters, today):
+    if not quotations_allowed(actor(db)):
+        return []
     return [item for item in db.scalars(scoped(db, select(Quotation), Quotation).where(Quotation.deleted_at.is_(None))).all()
             if (not filters.division or item.division == filters.division)
             and within(date.fromisoformat(item.document["date"]), filters)
@@ -96,11 +99,19 @@ def summary_report(db, filters, now):
     followups = follow_rows(db, filters)
     won = sum(item.status == "Won" for item in leads)
     lost = sum(item.status == "Lost" for item in leads)
-    return {**metadata(filters, "Leads: created date; quotations: quotation date; follow-ups: due date (IST)"),
+    result = {**metadata(filters, "Leads: created date; quotations: quotation date; follow-ups: due date (IST)"),
             "totals": {"totalLeads": len(leads), "wonLeads": won, "lostLeads": lost, "conversionRate": rate(won, lost),
                        "overdueFollowUps": sum(item.status == "Pending" and utc(item.due_at) < now for item, _ in followups),
                        "totalQuotations": len(quotes), "acceptedQuotations": sum(item.status == "Accepted" for item in quotes)},
             "acceptedValue": accepted_values(quotes)}
+    result["canAccessQuotations"] = quotations_allowed(actor(db))
+    if not result["canAccessQuotations"]:
+        result["totals"].pop("totalQuotations")
+        result["totals"].pop("acceptedQuotations")
+        result.pop("acceptedValue")
+        result["dateBasis"] = "Leads: created date; follow-ups: due date (IST)"
+    return result
+
 
 
 def leads_report(db, filters):

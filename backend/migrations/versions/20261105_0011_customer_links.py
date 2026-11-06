@@ -16,6 +16,8 @@ def key(value):
 def upgrade():
     for name in ("leads", "quotations"):
         with op.batch_alter_table(name) as batch:
+            if name == "leads":
+                batch.alter_column("customer", existing_type=sa.String(100), type_=sa.String(120), existing_nullable=False)
             batch.add_column(sa.Column("customer_id", sa.String(36), nullable=True))
             batch.create_foreign_key(f"fk_{name}_customer", "customers", ["customer_id"], ["id"], ondelete="RESTRICT")
             batch.create_index(f"ix_{name}_customer_id", ["customer_id"])
@@ -42,8 +44,13 @@ def upgrade():
 
 
 def downgrade():
+    connection = op.get_bind()
+    if connection.scalar(sa.text("SELECT count(*) FROM leads WHERE length(customer) > 100")):
+        raise RuntimeError("Cannot downgrade: some lead names exceed the old 100-character limit")
     for name in ("quotations", "leads"):
         with op.batch_alter_table(name) as batch:
             batch.drop_index(f"ix_{name}_customer_id")
             batch.drop_constraint(f"fk_{name}_customer", type_="foreignkey")
             batch.drop_column("customer_id")
+            if name == "leads":
+                batch.alter_column("customer", existing_type=sa.String(120), type_=sa.String(100), existing_nullable=False)

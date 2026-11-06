@@ -16,6 +16,7 @@ from app.core.config import settings
 from app.core.security import passwords
 from app.db.database import Base, get_db
 from app.main import app
+from app.models.role_permissions import RolePermissions
 from app.models.user import User
 
 
@@ -26,15 +27,15 @@ def main():
     config.set_main_option("script_location", str(Path(__file__).resolve().parents[1] / "migrations"))
     with engine.begin() as connection:
         old = connection.scalar(text("SELECT version_num FROM alembic_version"))
-        assert old in {"20261105_0007", "20261105_0008", "20261105_0009", "20261105_0010"}, "Unexpected migration revision"
+        assert old in {"20261105_0007", "20261105_0008", "20261105_0009", "20261105_0010", "20261105_0011", "20261106_0012", "20261106_0013"}, "Unexpected migration revision"
         existing = set(inspect(connection).get_table_names()) & set(Base.metadata.tables)
         counts = {name: connection.scalar(text(f'SELECT COUNT(*) FROM "{name}"')) for name in existing}
-        users = connection.execute(text("SELECT * FROM users ORDER BY id")).all()
+        users = connection.execute(text("SELECT to_jsonb(t) - 'quotation_access' FROM users t ORDER BY id")).all()
         config.attributes["connection"] = connection
         command.upgrade(config, "head")
         assert not compare_metadata(MigrationContext.configure(connection, opts={"compare_type": True}), Base.metadata)
         assert counts == {name: connection.scalar(text(f'SELECT COUNT(*) FROM "{name}"')) for name in existing}
-        assert users == connection.execute(text("SELECT * FROM users ORDER BY id")).all()
+        assert users == connection.execute(text("SELECT to_jsonb(t) - 'quotation_access' FROM users t ORDER BY id")).all()
         if old == "20261105_0007":
             for table in ("leads", "customers", "quotations"):
                 assert connection.scalar(text(f'SELECT COUNT(*) FROM "{table}" WHERE assignee_user_id IS NOT NULL')) == 0
@@ -51,8 +52,9 @@ def main():
             factory = sessionmaker(bind=connection, join_transaction_mode="create_savepoint")
             db = factory()
             hashed = passwords.hash("QaAccess123")
-            users = [User(email=f"qa{n}@example.test", name="Duplicate name", role="Admin" if n == 0 else "Staff",
+            users = [User(email=f"qa{n}@example.test", name="Duplicate name", role="Admin" if n == 0 else "Staff", quotation_access=n != 0,
                           is_owner=n == 0, admin_slot=1 if n == 0 else None, password_hash=hashed) for n in range(3)]
+            db.add(RolePermissions(role="Staff", quotations=True))
             db.add_all(users)
             db.commit()
             app.dependency_overrides[get_db] = lambda: db

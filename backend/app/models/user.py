@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, JSON, String, UniqueConstraint
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, JSON, String, UniqueConstraint, false
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.database import Base
@@ -30,11 +30,16 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(120))
     password_hash: Mapped[str] = mapped_column(String(512))
     role: Mapped[str] = mapped_column(String(20), default="Staff")
+    quotation_access: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_owner: Mapped[bool] = mapped_column(Boolean, default=False)
     admin_slot: Mapped[int | None] = mapped_column(Integer, nullable=True, default=default_admin_slot)
     version: Mapped[int] = mapped_column(Integer, default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+    @property
+    def can_access_quotations(self):
+        return self.role == "Admin" or bool(getattr(self, "_staff_quotation_access", False))
 
 
 class AuthSession(Base):

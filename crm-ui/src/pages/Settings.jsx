@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { canAccessQuotations } from "../lib/permissions";
+import RolePermissions from "../components/settings/RolePermissions";
 import PasswordChange from "../components/settings/PasswordChange";
 import OperationsPanel from "../components/settings/OperationsPanel";
 import { useSettings } from "../context/SettingsContext";
@@ -10,6 +12,7 @@ import {
     UserRound,
     Building2,
     Users,
+    ShieldCheck,
     SlidersHorizontal,
     FileText,
     Bell,
@@ -24,6 +27,7 @@ const tabs = [
     { id: "profile", label: "My profile", icon: UserRound },
     { id: "company", label: "Company & divisions", icon: Building2 },
     { id: "users", label: "Users & access", icon: Users },
+    { id: "permissions", label: "Roles & permissions", icon: ShieldCheck },
     { id: "leads", label: "Lead settings", icon: SlidersHorizontal },
     { id: "quotation", label: "Products & quotations", icon: FileText },
     { id: "notifications", label: "Notifications", icon: Bell },
@@ -127,21 +131,14 @@ function Section({ title, description, children }) {
 }
 
 export default function Settings({ user }) {
-    const { accept } = useSettings();
-    const [result, setResult] = useState(null);
-    const [attempt, setAttempt] = useState(0);
-    useEffect(() => {
-        let active = true;
-        getSettings().then((data) => { if (active) { accept(data); setResult({ data }); } })
-          .catch((error) => { if (active) setResult({ error: error.message }); });
-        return () => { active = false; };
-    }, [accept, attempt]);
-    if (!result) return <Card><p role="status" className="p-5 text-sm text-slate-700">Loading saved settings...</p></Card>;
-    if (result.error) return <Card><div role="alert" className="space-y-3 p-5 text-sm text-rose-900"><p>{result.error}</p><Button onClick={() => setAttempt((value) => value + 1)}>Retry settings</Button></div></Card>;
-    return <SettingsEditor key={attempt} user={user} initialSettings={result.data} onSaved={accept} />;
+    const { settings, accept } = useSettings();
+    // The authenticated provider already loaded these. Preserve versions for CAS;
+    // the existing Reload saved settings action explicitly fetches fresh values.
+    return <SettingsEditor user={user} initialSettings={settings} onSaved={accept} />;
 }
 
 function SettingsEditor({ user, initialSettings, onSaved }) {
+    const visibleTabs = tabs.filter(({ id }) => (id !== "quotation" || canAccessQuotations(user)) && (id !== "permissions" || user.role === "Admin"));
     const [tab, setTab] = useState("profile");
     const [settings, setSettings] = useState(() => structuredClone(initialSettings));
     const [selectedDivision, setSelectedDivision] = useState(divisions[0]);
@@ -225,11 +222,11 @@ function SettingsEditor({ user, initialSettings, onSaved }) {
                 <label className="block lg:hidden">
                     <span className="sr-only">Settings section</span>
                     <select value={tab} disabled={saving} onChange={(event) => { setTab(event.target.value); setNotice(""); }} className="min-h-11 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-900 outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100">
-                        {tabs.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}
+                        {visibleTabs.map(({ id, label }) => <option key={id} value={id}>{label}</option>)}
                     </select>
                 </label>
                 <nav className="hidden space-y-1 lg:block" aria-label="Settings sections">
-                    {tabs.map(({ id, label, icon: Icon }) => (
+                    {visibleTabs.map(({ id, label, icon: Icon }) => (
                         <button
                             key={id}
                             disabled={saving}
@@ -253,7 +250,7 @@ function SettingsEditor({ user, initialSettings, onSaved }) {
 
             {/* Settings content */}
             <div className="w-full min-w-0 space-y-4">
-            {tab === "users" ? <><UserManagement currentUser={user} />{user.role === "Admin" && <CrmAssignments />}</> : (
+            {tab === "users" ? <><UserManagement currentUser={user} />{user.role === "Admin" && <CrmAssignments />}</> : tab === "permissions" && user.role === "Admin" ? <RolePermissions /> : (
             <><Card className="overflow-hidden">
                 <form onSubmit={saveSettings}>
                     <div className="border-b border-amber-200 bg-amber-50 px-5 py-3 text-xs leading-6 text-amber-950">
@@ -520,11 +517,11 @@ function SettingsEditor({ user, initialSettings, onSaved }) {
                                     description="When a pending follow-up passes its due time."
                                     {...toggle("notifications", "overdue")}
                                 />
-                                <Toggle
+                                {canAccessQuotations(user) && <Toggle
                                     label="Quotation expiry"
                                     description="Sent quotations expiring within two days, or already expired."
                                     {...toggle("notifications", "quotationExpiry")}
-                                />
+                                />}
                                 <Toggle
                                     label="Notification sound"
                                     {...toggle("notifications", "sound")}

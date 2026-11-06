@@ -145,7 +145,7 @@ export default function Quotations({ onChanged }) {
                             {label === "Total" ? "Total quotations" : label}
                         </p>
                         <strong className="mt-2 block text-2xl font-bold text-slate-950">
-                            {metrics.data?.quotations?.[label] ?? "�"}
+                            {metrics.data?.quotations?.[label] ?? "…"}
                         </strong>
                     </Card>
                 ))}
@@ -273,7 +273,7 @@ export default function Quotations({ onChanged }) {
                                                 {quote.number}
                                             </strong>
                                             <small className="mt-1 block text-slate-600">
-                                                {quote.source} · {quote.versionCount ?? quote.versions.length} version(s)
+                                                {quote.source} Â· {quote.versionCount ?? quote.versions.length} version(s)
                                             </small>
                                         </td>
 

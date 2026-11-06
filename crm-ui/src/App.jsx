@@ -23,12 +23,14 @@ import useNotificationSound from "./hooks/useNotificationSound";
 import Customers from "./pages/Customers";
 import Reports from "./pages/Reports";
 import SettingsProvider from "./components/settings/SettingsProvider";
+import { canAccessQuotations } from "./lib/permissions";
 import { useSettings } from "./context/SettingsContext";
 export default function App(props) {
   return <SettingsProvider user={props.user} onProfileUpdated={props.onProfileUpdated} onLogout={props.onLogout}><Workspace {...props} /></SettingsProvider>;
 }
 
 function Workspace({ user, onLogout, signingOut }) {
+  const canQuotes = canAccessQuotations(user);
   const { settings: preferences } = useSettings();
   const [page, setPage] = useState("Dashboard");
 
@@ -48,10 +50,11 @@ function Workspace({ user, onLogout, signingOut }) {
     media.addEventListener("change", closeDrawer);
     return () => media.removeEventListener("change", closeDrawer);
   }, []);
-  const overview = useWorkspaceData("overview", division, revision);
+  const overview = useWorkspaceData("overview", division, revision, "", preferences.notifications);
   const data = overview.data;
-  const now = Date.now();
-  const alerts = notificationAlerts({ leads: data?.alertLeads || [], followUps: data?.alertFollowUps || [], quotes: data?.alertQuotes || [], notifications: preferences.notifications, division, now });
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 30000); return () => clearInterval(timer); }, []);
+  const alerts = notificationAlerts({ leads: data?.alertLeads || [], followUps: data?.alertFollowUps || [], quotes: canQuotes ? data?.alertQuotes || [] : [], notifications: preferences.notifications, division, now });
   useNotificationSound(alerts, preferences.notifications.sound);
   useEffect(() => {
     const changed = (event) => setDivision(event.detail);
@@ -80,6 +83,7 @@ function Workspace({ user, onLogout, signingOut }) {
   }
 
   function navigate(nextPage) {
+    if (nextPage === "Quotations" && !canQuotes) return;
     setPage(nextPage);
     setSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -119,9 +123,10 @@ function Workspace({ user, onLogout, signingOut }) {
     <div className="min-h-screen bg-[#f4f7f5] font-sans text-slate-900 antialiased selection:bg-lime-200 selection:text-teal-950 [&_button]:cursor-pointer">
       <Sidebar
         page={page}
+        canViewQuotations={canQuotes}
         alwaysExpanded={preferences.workspace.sidebar === "Always expanded"}
         onNavigate={navigate}
-        leadCount={data?.metrics?.leads.total ?? "…"}
+        leadCount={data?.metrics?.leads.total ?? "ï¿½"}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
@@ -198,7 +203,7 @@ function Workspace({ user, onLogout, signingOut }) {
             </div>
           )}
 
-          {page === "Dashboard" ? (
+          {page === "Dashboard" ? (data ? (
             <Dashboard
               leads={data?.recentLeads || []}
               metrics={data?.metrics}
@@ -207,7 +212,7 @@ function Workspace({ user, onLogout, signingOut }) {
               now={now}
               onViewFollowUps={() => navigate("Follow-ups")}
             />
-          ) : page === "Leads" ? (
+          ) : <Card className="p-5"><p role={overview.error ? "alert" : "status"} className="text-sm text-slate-800">{overview.error || "Loading workspace summary..."}</p></Card>) : page === "Leads" ? (
             <LeadRegister division={division} revision={revision} onUpdateLead={handleUpdateLead}
               onDeleteLead={user.role === "Admin" ? handleDeleteLead : undefined} />
           ) : page === "Customers" ? (
@@ -215,7 +220,7 @@ function Workspace({ user, onLogout, signingOut }) {
           ) : page === "Settings" ? (
             <Settings user={user} />
           ) : page === "Quotations" ? (
-            <Quotations onChanged={changed} />
+            canQuotes ? <Quotations onChanged={changed} /> : <Card className="p-4">Quotation access is disabled.</Card>
           ) : page === "Follow-ups" ? (
             <FollowUps now={now} onChanged={changed} />
           ) : page === "Reports" ? (

@@ -12,14 +12,20 @@ from app.core.config import settings
 def root_path():
     path = settings.OPS_DIRECTORY.expanduser().absolute()
     backend = Path(__file__).resolve().parents[2]
-    if path.is_symlink() or path.is_junction() or path == Path(path.anchor) or path == backend or path in backend.parents:
+    if (
+        path.is_symlink()
+        or getattr(path, "is_junction", lambda: False)()
+        or path == Path(path.anchor)
+        or path == backend
+        or path in backend.parents
+    ):
         raise ValueError("Choose a dedicated operations directory")
     return path.resolve()
 
 
 def secure_directory(path):
     path = Path(path)
-    if path.is_symlink() or path.is_junction():
+    if path.is_symlink() or getattr(path, "is_junction", lambda: False)():
         raise ValueError("Operations directories cannot be links or junctions")
     path.mkdir(parents=True, exist_ok=True, mode=0o700)
     if os.name == "nt":

@@ -31,18 +31,18 @@ def main():
     config.set_main_option("script_location", str(Path(__file__).resolve().parents[1] / "migrations"))
     with engine.begin() as connection:
         revision = connection.scalar(text("SELECT version_num FROM alembic_version"))
-        assert revision in {"20261105_0009", "20261105_0010"}, "Unexpected migration head"
+        assert revision in {"20261105_0009", "20261105_0010", "20261105_0011", "20261106_0012", "20261106_0013"}, "Unexpected migration head"
         tables = set(inspect(connection).get_table_names()) & set(Base.metadata.tables)
         counts = {name: connection.scalar(text(f'SELECT count(*) FROM "{name}"')) for name in tables}
-        users = connection.execute(text("SELECT * FROM users ORDER BY id")).all()
-        snapshots = {name: connection.execute(text(f'SELECT to_jsonb(t) - \'version\' FROM "{name}" t ORDER BY id')).all() for name in ("leads", "customers")}
+        users = connection.execute(text("SELECT to_jsonb(t) - 'quotation_access' FROM users t ORDER BY id")).all()
+        snapshots = {name: connection.execute(text(f'SELECT to_jsonb(t) - \'version\' - \'customer_id\' FROM "{name}" t ORDER BY id')).all() for name in ("leads", "customers")}
         config.attributes["connection"] = connection
         command.upgrade(config, "head")
         assert not compare_metadata(MigrationContext.configure(connection, opts={"compare_type": True}), Base.metadata)
         assert counts == {name: connection.scalar(text(f'SELECT count(*) FROM "{name}"')) for name in tables}
-        assert users == connection.execute(text("SELECT * FROM users ORDER BY id")).all()
-        assert snapshots == {name: connection.execute(text(f'SELECT to_jsonb(t) - \'version\' FROM "{name}" t ORDER BY id')).all() for name in snapshots}
-    print("Migration 0010 matches models; existing record counts, lead/customer fields and login accounts preserved.")
+        assert users == connection.execute(text("SELECT to_jsonb(t) - 'quotation_access' FROM users t ORDER BY id")).all()
+        assert snapshots == {name: connection.execute(text(f'SELECT to_jsonb(t) - \'version\' - \'customer_id\' FROM "{name}" t ORDER BY id')).all() for name in snapshots}
+    print("Current migration head matches models; existing record counts, lead/customer fields and login accounts preserved.")
 
     schema = "qa_pages_" + uuid4().hex
     assert re.fullmatch(r"qa_pages_[a-f0-9]{32}", schema)

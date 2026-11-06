@@ -7,7 +7,7 @@ from app.schemas.common import ApiModel, Division, LeadStatus, Priority, Referen
 
 class LeadBase(ApiModel):
     customer_id: str | None = Field(default=None, alias="customerId", min_length=1, max_length=36)
-    customer: str = Field(min_length=1, max_length=100)
+    customer: str = Field(min_length=1, max_length=120)
     contact: str = Field(default="", max_length=150)
     division: Division
     description: str = Field(default="", max_length=10000)
@@ -29,7 +29,7 @@ class LeadCreate(LeadBase):
 class LeadUpdate(UpdateModel):
     customer_id: str | None = Field(default=None, alias="customerId", min_length=1, max_length=36)
     expected_version: int | None = Field(default=None, alias="expectedVersion", ge=1)
-    customer: str | None = Field(default=None, min_length=1, max_length=100)
+    customer: str | None = Field(default=None, min_length=1, max_length=120)
     contact: str | None = Field(default=None, max_length=150)
     division: Division | None = None
     description: str | None = Field(default=None, max_length=10000)

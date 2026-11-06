@@ -1,7 +1,7 @@
 import { apiRequest, clearAuthentication } from "./apiClient.js";
 
 function valid(data) {
-  if (!data?.profile || !data.company || !data.divisions || !data.leads || !data.quotation || !data.notifications || !data.workspace || !data.versions) throw new Error("The settings API returned an invalid response.");
+  if (!data?.profile || !data.company || !data.divisions || !data.leads || (!data.quotation && data.canAccessQuotations !== false) || !data.notifications || !data.workspace || !data.versions) throw new Error("The settings API returned an invalid response.");
   return data;
 }
 

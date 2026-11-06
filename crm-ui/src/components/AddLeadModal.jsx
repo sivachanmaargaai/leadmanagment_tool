@@ -108,7 +108,7 @@ export default function AddLeadModal({ onClose, onSave, saveError = "", saving =
                     <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5">
                         <div className={labelClass}>
                             <span>Customer / company *</span>
-                            <CustomerField {...customerLink} onChange={setCustomerLink} maxLength={100} />
+                            <CustomerField {...customerLink} onChange={setCustomerLink} maxLength={120} />
                         </div>
 
                         <label className={labelClass}>
@@ -126,7 +126,7 @@ export default function AddLeadModal({ onClose, onSave, saveError = "", saving =
                             Division *
                             <select
                                 name="division"
-                                defaultValue={preferences.workspace.defaultDivision === "All divisions" ? "Nemilinks" : preferences.workspace.defaultDivision}
+                                defaultValue={preferences.workspace.defaultDivision === "All divisions" ? "Nemilink" : preferences.workspace.defaultDivision}
                                 className={fieldClass}
                             >
                                 {divisions.map((division) => (

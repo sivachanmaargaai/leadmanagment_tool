@@ -4,14 +4,16 @@ Run commands from `D:/CRM-TOOL/backend`.
 
 ```powershell
 .\venv\Scripts\python.exe -m pip install -r requirements.txt
-# For a new installation, copy .env.example to .env and set your own database URL.
+# Local setup: copy .env.example to .env.local once, then set your local DATABASE_URL.
 .\venv\Scripts\python.exe -m alembic upgrade head
 # For the first administrator, run once in your own interactive terminal:
 .\venv\Scripts\python.exe -m app.commands.create_admin
 .\venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-access-log
 ```
 
-The existing `.env` is preserved. Do not replace it with the example.
+Local development reads `backend/.env.local` using an absolute path. The old `.env` is preserved but is no longer loaded. Render/production reads process environment variables only, including `DATABASE_URL`; it never loads local dotenv files. See [local and Render configuration](audit/ENVIRONMENT-CONFIGURATION.md).
+
+When local development intentionally uses the Render database, network round trips still add latency. Duplicate Settings/startup reads and unnecessary sequential SQL were reduced; [measurements, checks and remaining network overhead](audit/CLOUD-DATABASE-LATENCY.md) document the improvement. Restart the backend after updating the code.
 
 ## Existing databases
 
@@ -38,14 +40,14 @@ Leads (5), Customers (5), Follow-ups (7), Quotations (9), Reports (4), Authentic
 
 The local migration has added `users`, `auth_sessions`, `access_tokens` and `refresh_tokens`. Old browser Settings staff entries are not automatically imported into login accounts. On a fresh installation, create the first administrator/Owner with `python -m app.commands.create_admin`. It asks for email, display name and an 8-128-character password twice through a hidden prompt, hashes it with Argon2id and refuses to overwrite an existing email. Password whitespace is significant. No further administrators can be created with that command after an Owner exists; the Owner uses Settings > Users & access. There is no public registration or first-admin HTTP endpoint.
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/api/auth/login` | JSON email/password; issue an access token and refresh cookie |
-| POST | `/api/auth/refresh` | Rotate refresh cookie and issue a new access token |
-| GET | `/api/auth/me` | Current active user's profile |
-| POST | `/api/auth/logout` | Revoke the current session and remove its cookie |
-| POST | `/api/auth/logout-all` | Revoke all sessions belonging to the current user |
-| POST | `/api/auth/change-password` | Verify current password, change own password, revoke all own sessions |
+| Method | Path                        | Purpose                                                               |
+| ------ | --------------------------- | --------------------------------------------------------------------- |
+| POST   | `/api/auth/login`           | JSON email/password; issue an access token and refresh cookie         |
+| POST   | `/api/auth/refresh`         | Rotate refresh cookie and issue a new access token                    |
+| GET    | `/api/auth/me`              | Current active user's profile                                         |
+| POST   | `/api/auth/logout`          | Revoke the current session and remove its cookie                      |
+| POST   | `/api/auth/logout-all`      | Revoke all sessions belonging to the current user                     |
+| POST   | `/api/auth/change-password` | Verify current password, change own password, revoke all own sessions |
 
 Access tokens are random opaque Bearer tokens, not JWTs. They live only in frontend memory and expire after 15 minutes by default; database queries check session revocation and user activation on every authenticated request. Refresh tokens use a host-only HttpOnly, SameSite=Strict cookie scoped to `/api/auth`, expire after an absolute seven days by default, and rotate on each use. Only SHA-256 token hashes are stored in the database. Consumed refresh hashes remain recorded so replay revokes that session. Multiple short-lived access tokens may coexist within one session to support multiple tabs; logout invalidates them all immediately. The frontend deduplicates simultaneous refresh attempts and uses Web Locks when available to serialize cookie rotation across tabs. Lost refresh responses or races on browsers without Web Locks may require signing in again.
 
@@ -60,7 +62,7 @@ Owner-only user-management permissions and self-service password changes are imp
 Settings > Users & access now displays actual login accounts and saves changes immediately through the API. Its old browser-only staff-entry form is removed.
 
 - Owner (first administrator): sees all Admin/Staff accounts; creates accounts, edits details, resets other users' passwords, changes roles and activates/deactivates users.
-- Second administrator: sees a read-only staff-only directory; cannot create accounts or modify roles/details/passwords.
+- Second administrator: sees a staff-only directory and can manage common Staff module access in Roles & permissions; cannot create accounts or modify roles/details/passwords.
 - Staff: sees only their own login profile and cannot manage any accounts.
 - Maximum two Admin accounts, counting the Owner and including inactive administrators. Once both slots are occupied, new users default to Staff and the Admin option is disabled. Demoting the second administrator frees that slot.
 - The Owner row is protected from all edits/deactivation on this page. Owner transfer/self-service profile changes are outside this feature.
@@ -84,7 +86,7 @@ GET `/api/settings` returns the signed-in user's profile/preferences plus shared
 - Sidebar mode/default division apply to the user's workspace; display date formats apply to follow-ups, quotations and report timestamps. Rows per page applies to the main CRM registers and report tables; it is client-side pagination, not the future backend traffic/pagination work.
 - In-app toggles filter high-priority lead alerts, upcoming/overdue task reminders and Sent/Expired quotation alerts. Quote expiry considers the next two days and already expired quotes. Sound requires a browser interaction/audio support. CRM must stay open; background email/WhatsApp/push delivery is not implemented. The old unsupported lead-assignment toggle is replaced with the actually supported priority-alert toggle.
 
-Product catalogue management, arbitrary division creation/renaming, custom logo uploads, digital signatures, background delivery and public production hardening are outside these existing Settings fields. Business schemas still use MMC/Nemilinks/ClearCode Labs. The app blocks data entry if initial Settings cannot load rather than silently applying defaults after a server error.
+Product catalogue management, arbitrary division creation/renaming, custom logo uploads, digital signatures, background delivery and public production hardening are outside these existing Settings fields. Business schemas still use MMC/nemilink/ClearCode Labs. The app blocks data entry if initial Settings cannot load rather than silently applying defaults after a server error.
 
 Follow-ups has seven endpoints under `/api/follow-ups`: POST/GET collection, GET/PUT/DELETE by ID, GET `/upcoming`, GET `/overdue`. Completion and an optional next task are committed atomically by PUT; its response is `{record, nextFollowUp}`. Send `expectedVersion` to reject stale edits. History is generated by the server. DELETE archives the task, and linked lead deletion is blocked to retain history. Upcoming means pending tasks at or after the current instant, including later today; the UI's Upcoming tab means dates after today in IST.
 
@@ -116,17 +118,17 @@ The last pre-authentication live run passed five scenarios / 57 checks and wrote
 
 ## Quotation API reference
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| POST | `/api/quotations` | Create structured quotation and generate PDF |
-| GET | `/api/quotations` | List active records with revision metadata |
-| GET | `/api/quotations/{id}` | Read a record |
-| PUT | `/api/quotations/{id}` | Update status, or edit details and generate a revision |
-| DELETE | `/api/quotations/{id}?expectedVersion=N` | Archive; retain PDF history |
-| GET | `/api/quotations/{id}/pdf` | Latest PDF; `?download=true` returns attachment |
-| POST | `/api/quotations/upload` | Import existing PDF with metadata |
-| POST | `/api/quotations/{id}/revisions` | Upload replacement PDF; retain previous revisions |
-| GET | `/api/quotations/{id}/versions/{versionId}/pdf` | Read/download a specific PDF revision |
+| Method | Path                                            | Purpose                                                |
+| ------ | ----------------------------------------------- | ------------------------------------------------------ |
+| POST   | `/api/quotations`                               | Create structured quotation and generate PDF           |
+| GET    | `/api/quotations`                               | List active records with revision metadata             |
+| GET    | `/api/quotations/{id}`                          | Read a record                                          |
+| PUT    | `/api/quotations/{id}`                          | Update status, or edit details and generate a revision |
+| DELETE | `/api/quotations/{id}?expectedVersion=N`        | Archive; retain PDF history                            |
+| GET    | `/api/quotations/{id}/pdf`                      | Latest PDF; `?download=true` returns attachment        |
+| POST   | `/api/quotations/upload`                        | Import existing PDF with metadata                      |
+| POST   | `/api/quotations/{id}/revisions`                | Upload replacement PDF; retain previous revisions      |
+| GET    | `/api/quotations/{id}/versions/{versionId}/pdf` | Read/download a specific PDF revision                  |
 
 Create accepts `number`, `customer`, `division`, `date`, `validUntil`, optional contact/address, currency (INR/USD/EUR/GBP), tax (0-100), terms, and up to 100 items containing `description`, `quantity`, `rate`, `billing` (One-time/Monthly/Yearly). Totals use server-side decimal arithmetic: round each line to two decimals, then tax per billing period. Client-supplied totals/IDs/history are rejected. Quotation numbers are case-insensitively unique per division, including archived records; blank structured quotation numbers use the Settings-controlled transactional sequence; manual numbers remain supported.
 
@@ -140,13 +142,11 @@ Frontend Quotations and Customer PDF views now use these APIs rather than Indexe
 
 The frontend does not silently migrate or erase profiles saved in the earlier browser-only prototype. Transfer useful legacy profiles deliberately after reviewing duplicates. Authentication and Owner account-management rules are implemented; CRM assignment permissions are enforced; the remaining production-readiness steps are still pending.
 
-
 ## Forgot-password recovery (2026-11-05)
 
 Migration `20261105_0007` is applied to local PostgreSQL; existing accounts and CRM row counts were preserved. POST `/api/auth/forgot-password` sends a generic accepted response; POST `/api/auth/reset-password` validates a single-use link, changes the password and revokes all sessions. Both require X-CRM-Request: 1 and an allowed Origin when present. Recovery-specific database-backed throttles are implemented. Mail uses existing-mailbox SMTP with verified STARTTLS or SSL. Configure the new fields from `.env.example` locally and restart; recovery remains disabled until then. No real email has been sent during verification.
 
 See [configuration, checks and remaining limits](audit/PASSWORD-RECOVERY-REPORT.md). Recovery tests add eight backend and five frontend scenarios to the previous suites. PostgreSQL integration passed with mocked mail and a rolled-back QA schema. Durable email workers/retries, real-mailbox delivery verification and browser interaction QA remain pending.
-
 
 ## Staff CRM access (2026-11-05)
 
@@ -156,7 +156,6 @@ Manage assignments in Settings > Users & access > CRM record access. Customer/qu
 
 [Policy, endpoints, verification and limits](audit/CRM-ACCESS-REPORT.md). Local PostgreSQL migration/integration checks passed in a rolled-back QA schema. Browser interaction QA remains pending. Referral contact pickers now use per-account browser keys; the old shared registry remains untouched for reviewed migration rather than being displayed to every login.
 
-
 ## Login/API request protection (2026-11-05)
 
 Migration `20261105_0009` adds shared database-backed budgets. Defaults: API IP 600/minute and 100/10 seconds, user 300/minute, user writes 60/minute; login IP 20/15 minutes and normalized email 10/15 minutes. Unknown/malformed/unauthorized API requests count toward IP budgets. Budget transactions survive failed requests, and blocked responses use 429 with Retry-After; the UI displays the wait without automatically resubmitting writes. Rate-store failure returns a safe 503. Production cannot disable general rate limiting.
@@ -164,7 +163,6 @@ Migration `20261105_0009` adds shared database-backed budgets. Defaults: API IP 
 A pure ASGI guard checks complete request bodies before handlers: JSON 1 MiB, authentication 16 KiB, quotation multipart total 12 MiB (individual PDF remains 10 MiB), headers 16 KiB/100 fields, raw path+query 4096 bytes and body-read timeout 30 seconds. Actual received bytes are bounded even without a reliable Content-Length. Compressed/ambiguous framing is rejected. Defaults apply automatically; `.env.example` lists optional overrides. The existing secret `.env` was preserved.
 
 [Configuration, verification and operational limits](audit/REQUEST-LIMITS-REPORT.md). All 87 backend and 49 frontend tests, lint/build and PostgreSQL checks pass. Twenty concurrent PostgreSQL quota attempts allowed exactly five for a five-request budget. Existing login/account/CRM assignment data was preserved. QA accounts/schema were removed. Trust forwarding headers only from an explicitly configured proxy; ingress/concurrency sizing, counter cleanup, actual load testing and production deployment remain pending.
-
 
 ## Bounded lists and concurrent edits (2026-11-05)
 
@@ -174,7 +172,6 @@ Lead/Customer updates require `expectedVersion`; their deletes and Follow-up del
 
 [Contracts, checks and remaining limits](audit/PAGINATION-CONCURRENCY-REPORT.md). All 94 backend and 53 frontend tests, lint/build and PostgreSQL pagination/race checks pass. Each simultaneous edit race produced exactly one saved change and one conflict; existing live records/accounts were preserved and QA data removed. Browser interaction QA, full server-driven UI migration, relational customer IDs, backups/restore, monitoring and load testing remain pending.
 
-
 ## Manual backup/restore tools and monitoring (2026-11-05)
 
 Owner-only Settings > Workspace > System health & backups now shows database/schema readiness, local backup freshness/restore status and current-worker request/error/slow counts. Public `/api/ready` returns generic 200/503, separate from lightweight liveness. Owner `/api/ops/status` includes storage/job warnings. Structured per-worker rotating JSON logs use request IDs and fixed route templates; raw query/body/credential/customer details are excluded. The frontend shows request references for server errors.
@@ -183,9 +180,17 @@ Manual encrypted backup, isolated restore-check and restore-new commands are ava
 
 **Real backup configuration, scheduling and offsite copies were deferred by the user.** No real CRM backup/key or scheduled task was created. Disposable PostgreSQL data verified full public-table/PDF restore and tamper rejection; all QA databases/files were removed. Monitoring exists, but no always-on external alerting service is configured. See [commands, recovery runbook, privacy and verification](audit/BACKUP-MONITORING-REPORT.md). All 104 backend and 55 frontend tests plus lint/build pass; browser interaction QA remains pending.
 
-
 ## Responsive UI verification (2026-11-05)
 
 Settings content-column grouping, mobile section navigation, account-row widths and assignment spacing are fixed. Sidebar mouse navigation collapses hover expansion; an invisible logo no longer blocks the touch width control, and touch expansion has a close action. Twelve isolated Chrome browser tests cover 320/375/768/1024/1440-pixel layouts, all Settings sections/main registers, dialogs, notification placement, hover/keyboard/touch navigation, focus trapping and body-scroll restoration. The 55 frontend tests, lint and production build also pass. No real CRM/API mutations were made by browser tests.
 
 See [coverage, fixture screenshots and remaining limits](audit/UI-RESPONSIVE-REPORT.md). Run `npm run test:ui` from crm-ui to repeat using installed Chrome. Live-backend browser flows, physical-device/cross-browser staging checks and subsequent data-link/query/load-test stages remain pending.
+
+## Customer IDs and large-data UI (2026-11-06)
+
+Stable Customer foreign keys, conservative legacy backfill, Admin link review, scoped SQL dashboard/card totals, server-driven core registers and 20-result record pickers are implemented. Quotation list summaries avoid downloading all PDF revisions; full details load on demand. Migration `20261105_0011` must run before deploying these changes. Live PostgreSQL verification/migration is pending because the configured database hostname cannot resolve from this PC; connection configuration was left untouched. See [contracts, checks, deployment step and limits](audit/CUSTOMER-LINKS-LARGE-DATA-REPORT.md).
+
+
+## Staff role permissions (2026-11-06)
+
+Settings > Roles & permissions now controls common Staff access with checkboxes. Admin Full access is locked ON; Staff Quotations starts OFF. Tick/untick and Save permissions applies to every current/future Staff account. Individual staff switches were removed and their legacy grants are ignored. The same policy guards API/PDF access, summaries, reports, alerts and customer activity. Saving revokes Staff sessions while retaining Admin sessions and assignment restrictions. Migration `20261106_0013` is applied; updated Render code deployment remains pending. See [usage, contracts and verification](audit/QUOTATION-ACCESS-REPORT.md).

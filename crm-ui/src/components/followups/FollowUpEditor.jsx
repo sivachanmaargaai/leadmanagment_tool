@@ -8,7 +8,7 @@ import { runtimeSettings } from "../../lib/runtimeSettings";
 
 const inputClass = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-normal text-slate-950 outline-none placeholder:text-slate-500 focus:border-teal-600 focus:ring-2 focus:ring-teal-100";
 function Field({ label, children, wide = false }) {
-  return <div className={`flex min-w-0 flex-col gap-2 text-xs font-semibold text-slate-800 ${wide ? "sm:col-span-2" : ""}`}><span>{label}</span>{children}</div>;
+  return <label className={`flex min-w-0 flex-col gap-2 text-xs font-semibold text-slate-800 ${wide ? "sm:col-span-2" : ""}`}>{label}{children}</label>;
 }
 
 export default function FollowUpEditor({ mode, record, onSave, onClose }) {
@@ -96,9 +96,9 @@ export default function FollowUpEditor({ mode, record, onSave, onClose }) {
           </Field>
           <p className="text-xs text-slate-700 sm:col-span-2">Completing this task does not change the lead's Won / Lost status.</p>
         </> : <>
-          <Field label="Customer / linked lead *" wide>
+          <div className="min-w-0 space-y-2 sm:col-span-2"><span className="block text-xs font-semibold text-slate-800">Customer / linked lead *</span>
             <RecordPicker kind="lead" value={form.leadId} name={lead?.customer || record?.customer} disabled={rescheduling} onChange={(item) => { setLead(item); setForm((current) => ({ ...current, leadId: item.id })); }} />
-          </Field>
+          </div>
           <div className="rounded-xl border border-teal-100 bg-teal-50 p-4 text-xs leading-6 sm:col-span-2">
             <strong className="text-teal-950">Referred by: {lead?.referredBy?.name || record?.referredBy?.name || "Not specified"}</strong>
             <p className="text-slate-700">{lead?.referredBy?.company || record?.referredBy?.company || lead?.leadSource || record?.leadSource || (lead ? "No referral recorded for this lead." : "Select a lead to see reference details.")}</p>

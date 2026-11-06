@@ -21,7 +21,7 @@ class PaginationVersionTests(unittest.TestCase):
         for number in range(125):
             self.db.add(Lead(id=f"lead-{number:03}", customer=f"Customer {number:03}", division="MMC", description="Firmware", created_at=at,
                              assignee_user_id=self.accounts[2 if number < 70 else 3].id))
-        self.db.add(Lead(customer="Literal 10%_done", division="Nemilinks", description="IoT", assignee_user_id=self.accounts[2].id))
+        self.db.add(Lead(customer="Literal 10%_done", division="nemilink", description="IoT", assignee_user_id=self.accounts[2].id))
         self.db.commit()
         first = self.client.get("/api/leads?paged=true&pageSize=25", headers=self.headers[2]).json()
         second = self.client.get("/api/leads?paged=true&pageSize=25&page=2", headers=self.headers[2]).json()

@@ -4,7 +4,7 @@ from pydantic import Field, field_validator, model_validator
 
 from app.schemas.common import ApiModel, Division, Priority
 
-DIVISIONS = ["MMC", "Nemilinks", "ClearCode Labs"]
+DIVISIONS = ["MMC", "nemilink", "ClearCode Labs"]
 
 
 class CompanySettings(ApiModel):
@@ -79,7 +79,7 @@ class Notifications(ApiModel):
 
 class WorkspacePreferences(ApiModel):
     sidebar: Literal["Hover to expand", "Always expanded"] = "Hover to expand"
-    defaultDivision: Literal["All divisions", "MMC", "Nemilinks", "ClearCode Labs"] = "All divisions"
+    defaultDivision: Literal["All divisions", "MMC", "nemilink", "ClearCode Labs"] = "All divisions"
     rowsPerPage: int = Field(default=10, ge=5, le=100)
     dateFormat: Literal["DD MMM YYYY", "DD/MM/YYYY", "YYYY-MM-DD"] = "DD MMM YYYY"
 
@@ -102,7 +102,7 @@ class SharedData(ApiModel):
     @classmethod
     def fixed_divisions(cls, value):
         if set(value) != set(DIVISIONS) or any(item.name != key for key, item in value.items()):
-            raise ValueError("Provide the existing MMC, Nemilinks and ClearCode Labs divisions without renaming them")
+            raise ValueError("Provide the existing MMC, nemilink and ClearCode Labs divisions without renaming them")
         return value
 
 

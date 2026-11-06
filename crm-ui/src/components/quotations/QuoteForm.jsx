@@ -19,12 +19,12 @@ const fieldClass =
 
 function Field({ label, children }) {
     return (
-        <div className="block min-w-0">
+        <label className="block min-w-0">
             <span className="mb-2 block text-xs font-semibold text-slate-800">
                 {label}
             </span>
             {children}
-        </div>
+        </label>
     );
 }
 
@@ -161,9 +161,9 @@ export default function QuoteForm({ mode, quotation, onClose, onSave }) {
             <form onSubmit={submit}>
                 <fieldset disabled={busy} className="min-w-0 space-y-4 p-4 sm:p-5">
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <Field label="Customer / company *">
+                        <div className="min-w-0"><span className="mb-2 block text-xs font-semibold text-slate-800">Customer / company *</span>
                             <CustomerField customer={form.customer} customerId={form.customerId} onChange={(link) => setForm((current) => ({ ...current, ...link }))} />
-                        </Field>
+                        </div>
 
                         <Field label="Contact person">
                             <input

@@ -16,6 +16,10 @@ class PasswordResetToken(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     delivery_status: Mapped[str] = mapped_column(String(16), default="pending")
+    recovery_kind: Mapped[str] = mapped_column(String(8), default="link", server_default="link")
+    otp_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    failed_attempts: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 

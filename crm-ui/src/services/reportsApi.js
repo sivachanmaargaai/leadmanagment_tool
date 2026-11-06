@@ -21,8 +21,8 @@ export async function getReport(kind, filters = {}, signal) {
   return data;
 }
 
-export async function getReports(filters, signal) {
-  const kinds = ["summary", "leads", "sales", "follow-ups"];
+export async function getReports(filters, signal, canAccessQuotations = true) {
+  const kinds = ["summary", "leads", ...(canAccessQuotations ? ["sales"] : []), "follow-ups"];
   const results = await Promise.all(kinds.map((kind) => getReport(kind, filters, signal)));
   return Object.fromEntries(kinds.map((kind, index) => [kind, results[index]]));
 }

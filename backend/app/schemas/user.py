@@ -57,6 +57,7 @@ class ManagedUser(UserResponse):
 class UserDirectory(BaseModel):
     users: list[ManagedUser]
     canManageUsers: bool
+    canManageRolePermissions: bool = False
     adminCount: int | None
     adminLimit: int = 2
     scope: Literal["All accounts", "Staff only", "My profile"]

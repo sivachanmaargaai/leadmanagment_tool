@@ -46,6 +46,16 @@ def response(item, db):
     return FollowUpResponse.model_validate(payload)
 
 
+def responses(rows, db):
+    if not rows:
+        return []
+    # Keep batch-loaded entities alive while rendering to avoid per-row queries.
+    leads = db.scalars(select(Lead).where(Lead.id.in_({row.lead_id for row in rows}))).all()
+    from app.models.user import User
+    users = db.scalars(select(User).where(User.id.in_({lead.assignee_user_id for lead in leads if lead.assignee_user_id}))).all()
+    return [response(row, db) for row in rows]
+
+
 def find(db, follow_up_id, lock=False):
     query = scoped(db, select(FollowUp), FollowUp).where(FollowUp.id == follow_up_id, FollowUp.deleted_at.is_(None))
     if lock:
@@ -78,7 +88,7 @@ def list_items(db, *, view="All", filters=None):
     if view != "All":
         query = query.where(FollowUp.status == "Pending")
         query = query.where(FollowUp.due_at < utc_now()) if view == "Overdue" else query.where(FollowUp.due_at >= utc_now())
-    return paginate(db, query, FollowUp, filters, lambda item: response(item, db))
+    return paginate(db, query, FollowUp, filters, lambda item: response(item, db), render_many=lambda rows: responses(rows, db))
 
 
 @router.get("", response_model=list[FollowUpResponse] | Page[FollowUpResponse])

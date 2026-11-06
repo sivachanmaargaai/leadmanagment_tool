@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-Division = Literal["MMC", "Nemilinks", "ClearCode Labs"]
+Division = Literal["MMC", "nemilink", "ClearCode Labs"]
 LeadStatus = Literal["New", "In Progress", "Follow-up", "Won", "Lost"]
 Priority = Literal["High", "Medium", "Low"]
 

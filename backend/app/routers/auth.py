@@ -17,6 +17,7 @@ from app.models.password_reset import PasswordResetToken
 from app.schemas.auth import ForgotPasswordRequest, LoginRequest, LoginResponse, PasswordChange, ResetPasswordRequest, UserResponse
 from app.services.password_recovery import consume_limit, deliver_password_reset
 from app.services.request_limits import enforce_login_limits
+from app.services.permissions import resolve_role_permissions
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -92,7 +93,7 @@ def issue_tokens(db, session, user, response, at):
     response.set_cookie(COOKIE_NAME, refresh, max_age=max(0, int((utc(session.expires_at) - at).total_seconds())),
                         expires=utc(session.expires_at), path=COOKIE_PATH, httponly=True, secure=settings.COOKIE_SECURE, samesite="strict")
     response.headers["Cache-Control"] = "no-store"
-    return LoginResponse(access_token=access, expires_in=int((expires_at - at).total_seconds()), user=UserResponse.model_validate(user))
+    return LoginResponse(access_token=access, expires_in=int((expires_at - at).total_seconds()), user=UserResponse.model_validate(resolve_role_permissions(db, user)))
 
 
 @router.post("/login", response_model=LoginResponse, dependencies=[Depends(require_auth_request)])

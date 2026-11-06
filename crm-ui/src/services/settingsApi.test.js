@@ -45,14 +45,16 @@ test("runtime preferences supply dates and real staff names without browser stor
 test("notification toggles independently control overdue, reminders, priority and expiry", () => {
   const preferences = defaultSettings().notifications;
   const now = Date.parse("2026-11-04T10:00:00Z");
-  const input = { division: "All divisions", now, notifications: preferences,
+  const input = {
+    division: "All divisions", now, notifications: preferences,
     leads: [{ id: "L1", customer: "QA", division: "MMC", priority: "High", status: "New" }],
     followUps: [{ id: "F1", customer: "QA", division: "MMC", status: "Pending", dueAt: new Date(now - 1).toISOString() },
-      { id: "F2", customer: "QA", division: "MMC", status: "Pending", dueAt: new Date(now + 1000).toISOString(), reminderMinutes: 30 }],
-    quotes: [{ id: "Q1", number: "Q1", customer: "QA", division: "MMC", status: "Sent", validUntil: "2026-11-05" }] };
+    { id: "F2", customer: "QA", division: "MMC", status: "Pending", dueAt: new Date(now + 1000).toISOString(), reminderMinutes: 30 }],
+    quotes: [{ id: "Q1", number: "Q1", customer: "QA", division: "MMC", status: "Sent", validUntil: "2026-11-05" }]
+  };
   assert.equal(notificationAlerts(input).length, 4);
   assert.deepEqual(notificationAlerts({ ...input, notifications: { ...preferences, overdue: false, quotationExpiry: false, leadPriority: false } }).map((x) => x.id), ["followup-F2"]);
-  assert.equal(notificationAlerts({ ...input, division: "Nemilinks" }).length, 0);
+  assert.equal(notificationAlerts({ ...input, division: "nemilink" }).length, 0);
 });
 
 test("settings API errors are actionable and password change never sends confirmation fields", async (t) => {

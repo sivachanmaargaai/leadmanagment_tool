@@ -6,5 +6,6 @@ from app.models.user import User, AuthSession, AccessToken, RefreshToken, UserAu
 from app.models.settings import WorkspaceSettings, UserPreferences
 from app.models.password_reset import PasswordResetToken, RecoveryRateBucket
 from app.models.rate_limit import RateLimitBucket
+from app.models.role_permissions import RolePermissions
 
-__all__ = ["Lead", "Customer", "FollowUp", "Quotation", "QuotationFile", "User", "AuthSession", "AccessToken", "RefreshToken", "UserAuditEvent", "WorkspaceSettings", "UserPreferences", "PasswordResetToken", "RecoveryRateBucket", "RateLimitBucket"]
+__all__ = ["Lead", "Customer", "FollowUp", "Quotation", "QuotationFile", "User", "AuthSession", "AccessToken", "RefreshToken", "UserAuditEvent", "WorkspaceSettings", "UserPreferences", "PasswordResetToken", "RecoveryRateBucket", "RateLimitBucket", "RolePermissions"]

@@ -2,13 +2,14 @@ from datetime import timedelta
 
 from fastapi import HTTPException
 from pydantic import ValidationError
-from sqlalchemy import select, update
+from sqlalchemy import select, update, literal
 
 from app.core.security import now
 from app.models.settings import UserPreferences, WorkspaceSettings
 from app.models.quotation import Quotation
 from app.schemas.settings import PersonalData, SharedData
 from app.schemas.common import error_details
+from app.services.permissions import quotations_allowed
 
 
 def shared_settings(db, lock=False):
@@ -22,13 +23,20 @@ def personal_settings(db, user_id):
 
 
 def settings_response(db, user):
-    shared, shared_row = shared_settings(db)
-    personal, personal_row = personal_settings(db, user.id)
+    anchor = select(literal(1).label("anchor")).subquery()
+    shared_row, personal_row = db.execute(select(WorkspaceSettings, UserPreferences).select_from(anchor)
+        .outerjoin(WorkspaceSettings, WorkspaceSettings.id == 1)
+        .outerjoin(UserPreferences, UserPreferences.user_id == user.id)).one()
+    shared = SharedData.model_validate(shared_row.data if shared_row else {})
+    personal = PersonalData.model_validate(personal_row.data if personal_row else {})
     data = shared.model_dump(mode="json")
     data.update(profile={"name": user.name, "email": user.email, "phone": personal.phone, "designation": personal.designation},
                 notifications=personal.notifications.model_dump(), workspace=personal.workspace.model_dump(),
                 versions={"shared": shared_row.version if shared_row else 1, "personal": personal_row.version if personal_row else 0, "profile": user.version},
-                canManageShared=user.is_owner)
+                canManageShared=user.is_owner, canAccessQuotations=quotations_allowed(user))
+    if not data["canAccessQuotations"]:
+        data.pop("quotation")
+        data["notifications"]["quotationExpiry"] = False
     return data
 
 

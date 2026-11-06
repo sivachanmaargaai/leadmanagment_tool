@@ -1,7 +1,8 @@
 from typing import Literal
 from pathlib import Path
+import os
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from urllib.parse import urlsplit
 import re
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -10,11 +11,18 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     DATABASE_URL: str
     ENVIRONMENT: Literal["development", "test", "production"] = "development"
+    ALLOW_REMOTE_DEVELOPMENT_DATABASE: bool = False
     ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
     COOKIE_SECURE: bool = False
     ACCESS_TOKEN_MINUTES: int = Field(default=15, ge=1, le=60)
     SESSION_DAYS: int = Field(default=7, ge=1, le=30)
     PASSWORD_RECOVERY_ENABLED: bool = False
+    MAIL_PROVIDER: Literal["smtp", "gmail"] = "smtp"
+    GMAIL_CLIENT_ID: str = ""
+    GMAIL_CLIENT_SECRET: SecretStr = SecretStr("")
+    GMAIL_REFRESH_TOKEN: SecretStr = SecretStr("")
+    GMAIL_SENDER: str = ""
+    OTP_MINUTES: int = Field(default=10, ge=5, le=15)
     RESET_LINK_MINUTES: int = Field(default=15, ge=5, le=60)
     RESET_BASE_URL: str = "http://localhost:5173"
     SMTP_HOST: str = ""
@@ -53,18 +61,34 @@ class Settings(BaseSettings):
     OPS_MIN_FREE_BYTES: int = Field(default=536870912, ge=1048576)
     OPS_HEALTH_BASE_URL: str = "http://127.0.0.1:8000"
 
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def database_driver(cls, value):
+        # Render supplies postgres:// or postgresql://; this project uses psycopg 3.
+        for prefix in ("postgres://", "postgresql://"):
+            if value.startswith(prefix):
+                return "postgresql+psycopg://" + value[len(prefix):]
+        return value
+
     @model_validator(mode="after")
     def production_cookie_policy(self):
+        database = urlsplit(self.DATABASE_URL)
+        if self.ENVIRONMENT == "development" and not self.ALLOW_REMOTE_DEVELOPMENT_DATABASE:
+            if database.scheme.startswith("postgres") and database.hostname not in {"localhost", "127.0.0.1", "::1"}:
+                raise ValueError("Development requires a local database. Configure backend/.env.local; remote development requires ALLOW_REMOTE_DEVELOPMENT_DATABASE=true explicitly")
         if self.ENVIRONMENT == "production":
             if not self.RATE_LIMIT_ENABLED:
                 raise ValueError("Production requires RATE_LIMIT_ENABLED=true")
             if not self.COOKIE_SECURE or not self.ALLOWED_ORIGINS or any(not value.startswith("https://") or "*" in value for value in self.ALLOWED_ORIGINS):
                 raise ValueError("Production requires COOKIE_SECURE=true and explicit HTTPS ALLOWED_ORIGINS")
         if self.PASSWORD_RECOVERY_ENABLED:
-            if not self.SMTP_HOST or not self.SMTP_USERNAME or not self.SMTP_PASSWORD.get_secret_value():
+            if self.MAIL_PROVIDER == "gmail" and (not self.GMAIL_CLIENT_ID or not self.GMAIL_CLIENT_SECRET.get_secret_value() or not self.GMAIL_REFRESH_TOKEN.get_secret_value()):
+                raise ValueError("Gmail recovery requires GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET and GMAIL_REFRESH_TOKEN")
+            if self.MAIL_PROVIDER == "smtp" and (not self.SMTP_HOST or not self.SMTP_USERNAME or not self.SMTP_PASSWORD.get_secret_value()):
                 raise ValueError("Password recovery requires SMTP_HOST, SMTP_USERNAME and SMTP_PASSWORD")
-            if not re.fullmatch(r"[^\s@<>\r\n]+@[^\s@<>\r\n]+\.[^\s@<>\r\n]+", self.SMTP_FROM) or any(character in self.SMTP_FROM_NAME for character in "\r\n"):
-                raise ValueError("Configure a valid SMTP_FROM address and sender name")
+            sender = self.GMAIL_SENDER if self.MAIL_PROVIDER == "gmail" else self.SMTP_FROM
+            if not re.fullmatch(r"[^\s@<>\r\n]+@[^\s@<>\r\n]+\.[^\s@<>\r\n]+", sender) or any(character in self.SMTP_FROM_NAME for character in "\r\n"):
+                raise ValueError("Configure a valid sender address and sender name")
             base = urlsplit(self.RESET_BASE_URL)
             if base.scheme not in {"http", "https"} or not base.netloc or base.username or base.password or base.query or base.fragment:
                 raise ValueError("RESET_BASE_URL must be a trusted frontend URL without credentials, query or fragment")
@@ -75,9 +99,23 @@ class Settings(BaseSettings):
         return self
 
     model_config = SettingsConfigDict(
-        env_file=".env",
-        extra="ignore"
+        env_file=None,
+        extra="ignore",
+        hide_input_in_errors=True,
     )
 
 
-settings = Settings()
+LOCAL_ENV_FILE = Path(__file__).resolve().parents[2] / ".env.local"
+
+
+def load_settings(local_env_file=LOCAL_ENV_FILE):
+    render = os.environ.get("RENDER", "").lower() == "true"
+    environment = os.environ.get("ENVIRONMENT", "production" if render else "development")
+    if render and environment != "production":
+        raise ValueError("Render requires ENVIRONMENT=production")
+    # Local files never participate in production/test configuration. Process
+    # environment variables retain priority over the local development file.
+    return Settings(ENVIRONMENT=environment, _env_file=local_env_file if environment == "development" else None)
+
+
+settings = load_settings()

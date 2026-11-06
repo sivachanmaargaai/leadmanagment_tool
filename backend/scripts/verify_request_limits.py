@@ -30,16 +30,16 @@ def main():
     config.set_main_option("script_location", str(Path(__file__).resolve().parents[1] / "migrations"))
     with engine.begin() as connection:
         old = connection.scalar(text("SELECT version_num FROM alembic_version"))
-        assert old in {"20261105_0008", "20261105_0009", "20261105_0010"}, "Unexpected migration revision"
+        assert old in {"20261105_0008", "20261105_0009", "20261105_0010", "20261105_0011", "20261106_0012", "20261106_0013"}, "Unexpected migration revision"
         existing = set(inspect(connection).get_table_names()) & set(Base.metadata.tables)
         counts = {name: connection.scalar(text(f'SELECT COUNT(*) FROM "{name}"')) for name in existing}
-        users = connection.execute(text("SELECT * FROM users ORDER BY id")).all()
+        users = connection.execute(text("SELECT to_jsonb(t) - 'quotation_access' FROM users t ORDER BY id")).all()
         assignments = {name: connection.execute(text(f'SELECT id, assignee_user_id FROM "{name}" ORDER BY id')).all() for name in ("leads", "customers", "quotations")}
         config.attributes["connection"] = connection
         command.upgrade(config, "head")
         assert not compare_metadata(MigrationContext.configure(connection, opts={"compare_type": True}), Base.metadata)
         assert counts == {name: connection.scalar(text(f'SELECT COUNT(*) FROM "{name}"')) for name in existing}
-        assert users == connection.execute(text("SELECT * FROM users ORDER BY id")).all()
+        assert users == connection.execute(text("SELECT to_jsonb(t) - 'quotation_access' FROM users t ORDER BY id")).all()
         assert assignments == {name: connection.execute(text(f'SELECT id, assignee_user_id FROM "{name}" ORDER BY id')).all() for name in assignments}
     print("Migration 0009 matches models; existing record counts, login rows and CRM assignments preserved.")
 

@@ -5,7 +5,7 @@ from app.services.pagination import collection_query, paginate
 from app.services.concurrency import claim_version, expected_version
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from pydantic import ValidationError
-from sqlalchemy import func, select, or_, and_
+from sqlalchemy import func, select, or_, and_, case
 from sqlalchemy.orm import Session
 
 from app.services.crm_access import get_crm_db, scoped, require_record, require_admin, creation_assignment, enforce_follow_assignment, actor
@@ -25,6 +25,13 @@ def find_customer(db, customer_id):
     return require_record(db, customer)
 
 
+def profile_responses(rows, db):
+    if not rows:
+        return []
+    counts = {customer_id: (total, won) for customer_id, total, won in db.execute(scoped(db, select(Lead.customer_id, func.count(), func.sum(case((Lead.status == "Won", 1), else_=0))), Lead).where(Lead.customer_id.in_([row.id for row in rows])).group_by(Lead.customer_id)).all()}
+    return [CustomerResponse.model_validate(row).model_copy(update={"lead_count": counts.get(row.id, (0, 0))[0], "stage": "Converted Customer" if counts.get(row.id, (0, 0))[1] else "Prospect"}) for row in rows]
+
+
 @router.post("", response_model=CustomerResponse, status_code=status.HTTP_201_CREATED)
 def create_customer(data: CustomerCreate, db: Session = Depends(get_crm_db)):
     with database_operation(db):
@@ -35,19 +42,19 @@ def create_customer(data: CustomerCreate, db: Session = Depends(get_crm_db)):
         db.add(customer)
         db.commit()
         db.refresh(customer)
-        return customer
+        return profile_responses([customer], db)[0]
 
 
 @router.get("", response_model=list[CustomerResponse] | Page[CustomerResponse])
 def get_customers(db: Session = Depends(get_crm_db), filters: Annotated[CustomerList, Query()] = CustomerList()):
     with database_operation(db):
-        return paginate(db, collection_query(db, Customer, filters, datetime.now(timezone.utc)), Customer, filters)
+        return paginate(db, collection_query(db, Customer, filters, datetime.now(timezone.utc)), Customer, filters, render_many=lambda rows: profile_responses(rows, db))
 
 
 @router.get("/{customer_id}", response_model=CustomerResponse)
 def get_customer(customer_id: str, db: Session = Depends(get_crm_db)):
     with database_operation(db):
-        return find_customer(db, customer_id)
+        return profile_responses([find_customer(db, customer_id)], db)[0]
 
 
 @router.put("/{customer_id}", response_model=CustomerResponse)
@@ -68,7 +75,7 @@ def update_customer(customer_id: str, data: CustomerUpdate, db: Session = Depend
             setattr(customer, field, validated[field])
         db.commit()
         db.refresh(customer)
-        return customer
+        return profile_responses([customer], db)[0]
 
 
 @router.delete("/{customer_id}", status_code=status.HTTP_204_NO_CONTENT)

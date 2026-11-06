@@ -16,7 +16,7 @@ function NavItem({ name, icon: Icon, active, count, expanded, onClick }) {
   </button>;
 }
 
-export default function Sidebar({ page, onNavigate, leadCount, open, onClose, alwaysExpanded = false }) {
+export default function Sidebar({ page, onNavigate, leadCount, open, onClose, alwaysExpanded = false, canViewQuotations = false }) {
   const ref = useRef(null);
   const [desktop, setDesktop] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
   const [hovered, setHovered] = useState(false);
@@ -78,7 +78,7 @@ export default function Sidebar({ page, onNavigate, leadCount, open, onClose, al
       <div className="mb-4 flex h-11 shrink-0 items-center gap-3 overflow-hidden rounded-xl bg-teal-50 px-4 text-teal-900">
         <Layers3 size={20} className="shrink-0" /><div aria-hidden={!expanded} className={`whitespace-nowrap transition-opacity duration-150 ${expanded ? "opacity-100" : "opacity-0"}`}><strong className="block text-xs">ENGEN Workspace</strong><small className="mt-0.5 block text-[10px] text-slate-700">All divisions. One workspace.</small></div>
       </div>
-      <nav className="space-y-1" aria-label="Main navigation">{navigation.map(({ name, icon }) => <NavItem key={name} name={name} icon={icon} active={page === name} expanded={expanded} count={name === "Leads" ? leadCount : undefined} onClick={() => navigate(name)} />)}</nav>
+      <nav className="space-y-1" aria-label="Main navigation">{navigation.filter(({ name }) => name !== "Quotations" || canViewQuotations).map(({ name, icon }) => <NavItem key={name} name={name} icon={icon} active={page === name} expanded={expanded} count={name === "Leads" ? leadCount : undefined} onClick={() => navigate(name)} />)}</nav>
       <div className="mt-auto pt-5"><NavItem name="Settings" icon={Settings} active={page === "Settings"} expanded={expanded} onClick={() => navigate("Settings")} />
         <div aria-hidden={!expanded} className={`mt-3 whitespace-nowrap border-t border-slate-200 px-4 pt-3 transition-opacity duration-150 ${expanded ? "opacity-100" : "opacity-0"}`}><strong className="text-xs text-teal-950">Scaling Heights</strong><p className="mt-1 text-[10px] text-slate-700">ENGEN CRM · Team workspace</p></div>
       </div>

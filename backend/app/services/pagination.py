@@ -42,10 +42,10 @@ def collection_query(db, model, filters, at):
         if filters.status:
             query = query.where(FollowUp.status == filters.status)
         today = at.astimezone(IST).date()
-        start = datetime.combine(filters.date or today, time.min, IST)
+        start = datetime.combine(filters.date or today, time.min, IST).astimezone(timezone.utc)
         if filters.date:
             query = query.where(FollowUp.due_at >= start, FollowUp.due_at < start + timedelta(days=1))
-        day_start = datetime.combine(today, time.min, IST)
+        day_start = datetime.combine(today, time.min, IST).astimezone(timezone.utc)
         if filters.view == "Completed":
             query = query.where(FollowUp.status == "Completed")
         elif filters.view != "All":

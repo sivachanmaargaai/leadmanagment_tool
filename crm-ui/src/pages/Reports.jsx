@@ -1,3 +1,5 @@
+import { useSettings } from "../context/SettingsContext";
+import { canAccessQuotations } from "../lib/permissions";
 import { useEffect, useState } from "react";
 import { Download, RefreshCw, Filter } from "lucide-react";
 import { divisions } from "../data/crm";
@@ -27,10 +29,13 @@ function AcceptedValue({ rows }) {
 }
 
 export default function Reports({ onNavigate }) {
+  const { user } = useSettings();
+  const canQuotes = canAccessQuotations(user);
   const [draft, setDraft] = useState(initial);
   const [applied, setApplied] = useState(initial);
   const [preset, setPreset] = useState("all");
-  const [tab, setTab] = useState("Leads");
+  const [selectedTab, setTab] = useState("Leads");
+  const tab = selectedTab === "Quotations" && !canQuotes ? "Leads" : selectedTab;
   const [refresh, setRefresh] = useState(0);
   const [result, setResult] = useState(null);
   const [exporting, setExporting] = useState(false);
@@ -46,11 +51,11 @@ export default function Reports({ onNavigate }) {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    getReports(JSON.parse(requestKey), controller.signal)
+    getReports(JSON.parse(requestKey), controller.signal, canQuotes)
       .then((reports) => { if (active) setResult({ key: requestKey, data: reports }); })
       .catch((error) => { if (active) setResult({ key: requestKey, error: error.message }); });
     return () => { active = false; controller.abort(); };
-  }, [requestKey]);
+  }, [requestKey, canQuotes]);
 
   function apply(event) {
     event?.preventDefault();
@@ -95,10 +100,10 @@ export default function Reports({ onNavigate }) {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[["Total leads", data.summary.totals.totalLeads], ["Won leads", data.summary.totals.wonLeads], ["Conversion rate", `${data.summary.totals.conversionRate}%`], ["Overdue follow-ups", data.summary.totals.overdueFollowUps]].map(([label, value]) => <Card key={label}><div className="p-4"><p className="text-xs font-semibold text-slate-700">{label}</p><strong className="mt-2 block text-2xl text-slate-950">{value}</strong></div></Card>)}
       </div>
-      <Card><CardHeading title="Accepted quotation value" description="Amounts include quoted tax. One-time and recurring values, and different currencies, stay separate. These are not received payments." /><div className="px-4 pb-4"><AcceptedValue rows={data.summary.acceptedValue} /></div></Card>
+      {canQuotes && <Card><CardHeading title="Accepted quotation value" description="Amounts include quoted tax. One-time and recurring values, and different currencies, stay separate. These are not received payments." /><div className="px-4 pb-4"><AcceptedValue rows={data.summary.acceptedValue} /></div></Card>}
       <p className="text-[11px] leading-5 text-slate-600">Conversion = Won ÷ (Won + Lost). Summary cards use date/division/test-data filters across all statuses. Leads use created date, quotations use quotation date, follow-ups use due date. All date boundaries use IST.</p>
 
-      <div role="tablist" aria-label="Report type" className="flex gap-2 overflow-x-auto pb-1">{tabs.map((name) => <button key={name} id={`tab-${name.replaceAll(" ", "-")}`} type="button" role="tab" aria-selected={tab === name} aria-controls="report-panel" onClick={() => { setTab(name); setExportError(""); }} className={`min-h-10 shrink-0 rounded-lg border px-4 py-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-teal-700 ${tab === name ? "border-teal-800 bg-teal-800 text-white shadow-sm" : "border-slate-200 bg-white text-slate-800 hover:bg-teal-50"}`}>{name}</button>)}</div>
+      <div role="tablist" aria-label="Report type" className="flex gap-2 overflow-x-auto pb-1">{tabs.filter((name) => name !== "Quotations" || canQuotes).map((name) => <button key={name} id={`tab-${name.replaceAll(" ", "-")}`} type="button" role="tab" aria-selected={tab === name} aria-controls="report-panel" onClick={() => { setTab(name); setExportError(""); }} className={`min-h-10 shrink-0 rounded-lg border px-4 py-2 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-teal-700 ${tab === name ? "border-teal-800 bg-teal-800 text-white shadow-sm" : "border-slate-200 bg-white text-slate-800 hover:bg-teal-50"}`}>{name}</button>)}</div>
       <div id="report-panel" role="tabpanel" aria-labelledby={`tab-${tab.replaceAll(" ", "-")}`} className="space-y-4">
         <div className="grid gap-3 md:grid-cols-2">
           {tab === "Leads" && <><ReportBars title="Lead status" items={data.leads.byStatus} onSelect={(name) => quickFilter("leadStatus", name)} /><ReportBars title="Lead priority" items={data.leads.byPriority} /><ReportBars title="Monthly lead trend" items={data.leads.trend} valueKey="total" /></>}

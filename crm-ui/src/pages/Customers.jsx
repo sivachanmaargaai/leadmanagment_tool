@@ -1,7 +1,12 @@
+import { canAccessQuotations } from "../lib/permissions";
 import { useSettings } from "../context/SettingsContext";
-import usePagination from "../hooks/usePagination";
+import useServerPage from "../hooks/useServerPage";
+import useWorkspaceData from "../hooks/useWorkspaceData";
+import { getLeadsPage } from "../services/leadsApi";
+import { getFollowUpsPage } from "../services/followUpsApi";
+import CustomerLinksPanel from "../components/CustomerLinksPanel";
 import Pagination from "../components/Pagination";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
     Plus,
     Search,
@@ -11,13 +16,8 @@ import {
     Trash2,
 } from "lucide-react";
 import { divisions } from "../data/crm";
-import {
-    belongsToCustomer,
-    buildCustomerDirectory,
-    normalise,
-} from "../lib/customers";
-import { getCustomers, createCustomer, updateCustomer, deleteCustomer } from "../services/customersApi";
-import { getQuotations } from "../services/quotationsApi";
+import { getCustomersPage, getCustomerById, createCustomer, updateCustomer, deleteCustomer } from "../services/customersApi";
+import { getQuotationsPage, getQuotationById } from "../services/quotationsApi";
 import PdfViewer from "../components/quotations/PdfViewer";
 import {
     effectiveStatus,
@@ -64,13 +64,12 @@ function DetailRow({ label, children }) {
 
 function CustomerDetails({
     customer,
-    leads,
-    quotations,
-    followUps,
     onClose,
     onEdit,
     onDelete,
 }) {
+    const { user } = useSettings();
+    const canQuotes = canAccessQuotations(user);
     const [tab, setTab] = useState("Overview");
     const [pdf, setPdf] = useState(null);
     const [deleting, setDeleting] = useState(false);
@@ -84,38 +83,18 @@ function CustomerDetails({
         finally { setDeleting(false); }
     }
 
-    const customerLeads = leads.filter((lead) =>
-        belongsToCustomer(lead, customer)
-    );
-
-    const leadIds = new Set(customerLeads.map((lead) => lead.id));
-
-    const customerQuotes = quotations.filter((quote) =>
-        belongsToCustomer(quote, customer)
-    );
-
-    const customerFollowUps = followUps.filter(
-        (item) =>
-            leadIds.has(item.leadId) ||
-            belongsToCustomer(item, customer)
-    );
-
-    const history = [
-        ...(customer.history || []),
-        ...customerFollowUps.flatMap((item) =>
-            (item.history || []).map((entry) => ({
-                ...entry,
-                message: `${item.purpose}: ${entry.message}`,
-            }))
-        ),
-        ...customerQuotes.flatMap((quote) =>
-            quote.versions.map((version, index) => ({
-                id: version.id,
-                at: version.uploadedAt,
-                message: `${quote.number} — PDF revision ${index + 1} saved.`,
-            }))
-        ),
-    ].sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+    const leadPage = useServerPage(getLeadsPage, { customerId: customer.id });
+    const quotePage = useServerPage(getQuotationsPage, { customerId: customer.id, summary: true }, "", { enabled: canQuotes });
+    const taskPage = useServerPage(getFollowUpsPage, { customerId: customer.id });
+    const pendingPage = useServerPage(getFollowUpsPage, { customerId: customer.id, status: "Pending", pageSize: 1 });
+    const customerLeads = leadPage.rows;
+    const customerQuotes = quotePage.rows;
+    const customerFollowUps = taskPage.rows;
+    const history = [...(customer.history || [])].sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
+    const activity = { Leads: leadPage, Quotations: quotePage, "Follow-ups": taskPage }[tab];
+    async function viewPdf(quote) {
+        try { setPdf(await getQuotationById(quote.id)); } catch (error) { setDeleteError(error.message); }
+    }
 
     return (
         <>
@@ -157,7 +136,7 @@ function CustomerDetails({
                             "Quotations",
                             "Follow-ups",
                             "History",
-                        ].map((name) => (
+                        ].filter((name) => name !== "Quotations" || canQuotes).map((name) => (
                             <button
                                 key={name}
                                 type="button"
@@ -173,19 +152,20 @@ function CustomerDetails({
                         ))}
                     </nav>
 
+                    {[leadPage, quotePage, taskPage, pendingPage].some((page) => page.error) && <p role="alert" className="mb-3 text-xs text-rose-800">{[leadPage, quotePage, taskPage, pendingPage].find((page) => page.error)?.error}</p>}
+                    {activity && <Pagination pagination={activity} />}
+                    {tab === "History" && <p className="mb-3 text-xs text-slate-600">Profile changes. Conversation notes are under Follow-ups; {canQuotes && "PDF revisions are available in each quotation viewer."}</p>}
                     {tab === "Overview" && (
                         <div className="space-y-5">
                             <div className="grid grid-cols-3 gap-2">
                                 {[
-                                    ["Leads", customerLeads.length],
-                                    ["Quotations", customerQuotes.length],
+                                    ["Leads", leadPage.loading ? "…" : leadPage.total],
+                                    ["Quotations", quotePage.loading ? "…" : quotePage.total],
                                     [
                                         "Pending tasks",
-                                        customerFollowUps.filter(
-                                            (item) => item.status === "Pending"
-                                        ).length,
+                                        pendingPage.loading ? "…" : pendingPage.total,
                                     ],
-                                ].map(([label, count]) => (
+                                ].filter(([label]) => label !== "Quotations" || canQuotes).map(([label, count]) => (
                                     <div
                                         key={label}
                                         className="rounded-xl border border-teal-100 bg-teal-50 p-3 shadow-sm"
@@ -334,7 +314,7 @@ function CustomerDetails({
 
                                         <Button
                                             variant="secondary"
-                                            onClick={() => setPdf(quote)}
+                                            onClick={() => viewPdf(quote)}
                                         >
                                             <Eye size={15} /> View PDF
                                         </Button>
@@ -411,119 +391,35 @@ function CustomerDetails({
     );
 }
 
-export default function Customers({ leads = [], followUps = [] }) {
+export default function Customers({ onChanged }) {
     const { user: accessUser } = useSettings();
-    const [saved, setSaved] = useState([]);
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(true);
+    const [actionError, setActionError] = useState("");
     const [reload, setReload] = useState(0);
-    const [quoteError, setQuoteError] = useState("");
-    const [quotations, setQuotations] = useState([]);
+    const [linking, setLinking] = useState(false);
     const [search, setSearch] = useState("");
     const [division, setDivision] = useState("All divisions");
     const [type, setType] = useState("All types");
     const [editor, setEditor] = useState(null);
-    const [selectedId, setSelectedId] = useState(null);
+    const [selected, setSelected] = useState(null);
     const [notice, setNotice] = useState("");
 
-    useEffect(() => {
-        let active = true;
-        getCustomers().then((records) => {
-            if (active) { setSaved(records); setError(""); }
-        }).catch((loadError) => {
-            if (active) setError(loadError.message);
-        }).finally(() => { if (active) setLoading(false); });
-        return () => { active = false; };
-    }, [reload]);
-
-    useEffect(() => {
-        let active = true;
-
-        getQuotations()
-            .then((records) => {
-                if (active) setQuotations(records);
-            })
-            .catch(() => {
-                if (active) {
-                    setQuoteError(
-                        "Quotation records could not be loaded. Customer details remain available."
-                    );
-                }
-            });
-
-        return () => {
-            active = false;
-        };
-    }, []);
-
-    const directory = buildCustomerDirectory(saved, leads, quotations);
-
-    const scoped = directory.filter(
-        (customer) =>
-            division === "All divisions" ||
-            customer.divisions.includes(division)
-    );
-
-    const filtered = scoped.filter((customer) => {
-        const searchable = [
-            customer.name,
-            customer.referredBy?.name,
-            customer.referredBy?.company,
-            ...customer.contacts.flatMap((contact) => [
-                contact.name,
-                contact.phone,
-                contact.email,
-            ]),
-        ]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
-
-        return (
-            (type === "All types" || customer.type === type) &&
-            searchable.includes(search.trim().toLowerCase())
-        );
-    });
-
-    const selected = directory.find(
-        (customer) => customer.id === selectedId
-    );
-
-  const pagination = usePagination(filtered);
-  const pageRows = pagination.rows;
+    const pagination = useServerPage(getCustomersPage, { q: search, division, type }, reload);
+    const { rows: pageRows, loading } = pagination;
+    const error = actionError || pagination.error;
+    const metrics = useWorkspaceData("metrics", division, reload);
+    const changed = () => { setReload((value) => value + 1); onChanged?.(); };
+    async function openCustomer(id, edit = false) {
+        try { const full = await getCustomerById(id); setActionError(""); if (edit) setEditor({ customer: full }); else setSelected(full); }
+        catch (failure) { setActionError(failure.message); }
+    }
     async function save(profile) {
-        if (loading || error) throw new Error("Load the customer directory successfully before saving. Use Retry to reconnect.");
-        const duplicate = directory.find(
-            (customer) =>
-                customer.id !== profile.id &&
-                [customer.name, ...(customer.aliases || [])].some(
-                    (name) => normalise(name) === normalise(profile.name)
-                )
-        );
-
-        if (duplicate) {
-            throw new Error(
-                "This customer already exists. Open their profile to edit details."
-            );
-        }
-
-        const exists = saved.some((customer) => customer.id === profile.id);
-        const result = exists ? await updateCustomer(profile.id, profile) : await createCustomer(profile);
-        setSaved((current) => exists ? current.map((customer) => customer.id === result.id ? result : customer) : [result, ...current]);
-        setEditor(null);
-        setSelectedId(result.id);
+        const result = profile.version ? await updateCustomer(profile.id, profile) : await createCustomer(profile);
+        setEditor(null); setSelected(await getCustomerById(result.id)); changed();
         setNotice("Customer saved to the database.");
     }
-
     async function removeCustomer(customer) {
-        const linkedLeads = leads.filter((lead) => belongsToCustomer(lead, customer));
-        const leadIds = new Set(linkedLeads.map((lead) => lead.id));
-        const hasLinkedRecords = linkedLeads.length || quotations.some((quote) => belongsToCustomer(quote, customer)) || followUps.some((item) => leadIds.has(item.leadId) || belongsToCustomer(item, customer));
-        if (hasLinkedRecords) throw new Error("This customer has linked records. Keep the profile until those records are reassigned or archived.");
         await deleteCustomer(customer.id, customer.version);
-        setSaved((current) => current.filter((record) => record.id !== customer.id));
-        setSelectedId(null);
-        setNotice("Customer deleted from the database.");
+        setSelected(null); changed(); setNotice("Customer deleted from the database.");
     }
 
     return (
@@ -531,27 +427,15 @@ export default function Customers({ leads = [], followUps = [] }) {
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="max-w-xl text-xs leading-6 text-slate-700">
                     Contact details, references and customer conversations.
-                    Existing leads and quotations are linked by customer name.
+                    Activity is linked by Customer ID. Unlinked enquiries remain in Leads.
                 </p>
-                <Button disabled={loading || Boolean(error)} onClick={() => setEditor({ customer: null })}>
+                <Button disabled={loading} onClick={() => setEditor({ customer: null })}>
                     <Plus size={16} /> Add customer
                 </Button>
             </div>
 
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-                {[
-                    ["Total customers", scoped.length],
-                    [
-                        "Prospects",
-                        scoped.filter((customer) => customer.stage === "Prospect").length,
-                    ],
-                    [
-                        "Converted customers",
-                        scoped.filter(
-                            (customer) => customer.stage === "Converted Customer"
-                        ).length,
-                    ],
-                ].map(([label, value]) => (
+                {["Total customers", "Prospects", "Converted customers"].map((label) => [label, metrics.data?.customers?.[label] ?? "…"]).map(([label, value]) => (
                     <Card key={label} className="p-4">
                         <p className="text-xs font-semibold text-slate-700">{label}</p>
                         <strong className="mt-2 block text-2xl text-slate-950">
@@ -563,11 +447,12 @@ export default function Customers({ leads = [], followUps = [] }) {
 
             {error && (
                 <p role="alert" className="rounded-xl bg-amber-50 p-3 text-xs leading-6 text-amber-950">
-                    {error} <button type="button" className="ml-2 font-semibold underline" onClick={() => { setLoading(true); setReload((value) => value + 1); }}>Retry</button>
+                    {error} <button type="button" className="ml-2 font-semibold underline" onClick={() => { setActionError(""); setReload((value) => value + 1); }}>Retry</button>
                 </p>
             )}
 
-            {quoteError && <p role="alert" className="rounded-xl bg-amber-50 p-3 text-xs text-amber-950">{quoteError}</p>}
+            {metrics.error && <p role="alert" className="text-xs text-rose-800">Summary: {metrics.error}</p>}
+            {accessUser.role === "Admin" && <Button variant="secondary" onClick={() => setLinking(true)}>Link existing records</Button>}
             {loading && <p role="status" className="rounded-xl bg-teal-50 p-3 text-xs text-teal-950">Loading customers from the database...</p>}
             {notice && (
                 <p role="status" className="rounded-xl bg-teal-50 p-3 text-xs text-teal-950">
@@ -626,7 +511,7 @@ export default function Customers({ leads = [], followUps = [] }) {
                                 <div className="min-w-0">
                                     <button
                                         type="button"
-                                        onClick={() => setSelectedId(customer.id)}
+                                        onClick={() => openCustomer(customer.id)}
                                         className="break-words text-left text-sm font-bold text-slate-950 hover:text-teal-800"
                                     >
                                         {customer.name}
@@ -659,7 +544,7 @@ export default function Customers({ leads = [], followUps = [] }) {
                                 </span>
                                 <Button
                                     variant="secondary"
-                                    onClick={() => setSelectedId(customer.id)}
+                                    onClick={() => openCustomer(customer.id)}
                                 >
                                     View profile
                                 </Button>
@@ -692,7 +577,7 @@ export default function Customers({ leads = [], followUps = [] }) {
                                     <td className="px-4 py-4">
                                         <button
                                             type="button"
-                                            onClick={() => setSelectedId(customer.id)}
+                                            onClick={() => openCustomer(customer.id)}
                                             className="flex items-center gap-3 text-left"
                                         >
                                             <Avatar name={customer.name} />
@@ -729,13 +614,13 @@ export default function Customers({ leads = [], followUps = [] }) {
                                         <div className="flex gap-1">
                                             <IconButton
                                                 aria-label={`View ${customer.name}`}
-                                                onClick={() => setSelectedId(customer.id)}
+                                                onClick={() => openCustomer(customer.id)}
                                             >
                                                 <Eye size={16} />
                                             </IconButton>
                                             <IconButton
                                                 aria-label={`Edit ${customer.name}`}
-                                                onClick={() => setEditor({ customer })}
+                                                onClick={() => openCustomer(customer.id, true)}
                                             >
                                                 <Pencil size={16} />
                                             </IconButton>
@@ -747,7 +632,7 @@ export default function Customers({ leads = [], followUps = [] }) {
                     </table>
                 </div>
 
-        {!loading && !filtered.length && (
+        {!loading && !pageRows.length && (
                     <EmptyState
                         icon={Building2}
                         title="No customers found"
@@ -757,25 +642,23 @@ export default function Customers({ leads = [], followUps = [] }) {
 
                 <Pagination pagination={pagination} />
                 <footer className="border-t border-slate-200 px-4 py-3 text-xs text-slate-600">
-                    {filtered.length} matching customer(s)
+                    {pagination.total} matching customer(s)
                 </footer>
             </Card>
 
             {selected && (
                 <CustomerDetails
                     customer={selected}
-                    leads={leads}
-                    quotations={quotations}
-                    followUps={followUps}
-                    onClose={() => setSelectedId(null)}
+                    onClose={() => setSelected(null)}
                     onEdit={() => {
-                        setSelectedId(null);
+                        setSelected(null);
                         setEditor({ customer: selected });
                     }}
-                    onDelete={accessUser.role === "Admin" && saved.some((customer) => customer.id === selected.id) ? removeCustomer : undefined}
+                    onDelete={accessUser.role === "Admin" ? removeCustomer : undefined}
                 />
             )}
 
+            {linking && <CustomerLinksPanel onClose={() => setLinking(false)} onChanged={changed} />}
             {editor && (
                 <CustomerForm
                     customer={editor.customer}

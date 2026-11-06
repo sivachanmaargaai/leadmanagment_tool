@@ -1,0 +1,16 @@
+
+.env
+.env.*
+!.env.example
+venv/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+*.rar
+*.log
+tmp/
+var/
+*.dump
+*.enc

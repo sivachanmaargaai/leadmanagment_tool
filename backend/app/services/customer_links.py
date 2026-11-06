@@ -6,10 +6,8 @@ from app.services.crm_access import require_record
 
 
 def validate_link(db, customer_id, name, existing=None):
-    if existing is not None and existing.customer_id == customer_id:
+    if existing is not None and existing.customer_id == customer_id and name == existing.customer:
         # A separately reassigned profile must not break edits to a visible enquiry.
-        if customer_id and name != existing.customer:
-            raise HTTPException(422, "Clear the customer link or select a profile before changing the customer name")
         return
     if customer_id is None:
         return

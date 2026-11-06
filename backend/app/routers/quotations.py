@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Response, Upl
 from pydantic import ValidationError
 from pypdf import PdfReader
 from sqlalchemy import select, update, func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 
 from app.services.crm_access import get_crm_db, scoped, require_admin, creation_assignment
 from app.db.operations import database_operation
@@ -20,11 +20,11 @@ from app.models.quotation import Quotation, QuotationFile
 from app.schemas.common import error_details
 from app.schemas.quotation import QuotationDocument, QuotationUpdate, totals
 from app.services.quotation_pdf import generate_pdf
-from app.core.security import get_current_user
+from app.core.security import get_current_user, require_quotation_user
 from app.models.user import User
 from app.services.settings import enforce_quote_approval, quote_defaults, quote_presentation, shared_settings
 
-router = APIRouter(prefix="/api/quotations", tags=["Quotations"])
+router = APIRouter(prefix="/api/quotations", tags=["Quotations"], dependencies=[Depends(require_quotation_user)])
 MAX_PDF_SIZE = 10 * 1024 * 1024
 
 
@@ -63,9 +63,11 @@ def response(item, db):
 
 
 def summaries(rows, db):
+    if not rows:
+        return []
     ids = [row.id for row in rows]
     latest = select(QuotationFile.quotation_id, func.max(QuotationFile.revision).label("revision"), func.count().label("count")).where(QuotationFile.quotation_id.in_(ids)).group_by(QuotationFile.quotation_id).subquery()
-    files = {file.quotation_id: (file, count) for file, count in db.execute(select(QuotationFile, latest.c.count).join(latest, (QuotationFile.quotation_id == latest.c.quotation_id) & (QuotationFile.revision == latest.c.revision))).all()}
+    files = {file.quotation_id: (file, count) for file, count in db.execute(select(QuotationFile, latest.c.count).options(load_only(QuotationFile.id, QuotationFile.quotation_id, QuotationFile.revision, QuotationFile.name)).join(latest, (QuotationFile.quotation_id == latest.c.quotation_id) & (QuotationFile.revision == latest.c.revision))).all()}
     result = []
     for row in rows:
         file, count = files.get(row.id, (None, 0))
@@ -175,7 +177,10 @@ def update_quotation(quotation_id: str, data: QuotationUpdate, db: Session = Dep
         if data.document is not None:
             if item.source != "Created":
                 raise HTTPException(409, "Upload a replacement PDF to revise an imported quotation")
-            details, settings = quote_defaults(db, data.document, existing_number=item.number)
+            details_input = data.document
+            if "customer_id" not in details_input.model_fields_set:
+                details_input = details_input.model_copy(update={"customer_id": item.customer_id})
+            details, settings = quote_defaults(db, details_input, existing_number=item.number)
             validate_link(db, details.customer_id, details.customer, item)
             document = quote_presentation(snapshot(details), settings)
             content = generate_pdf(document)
@@ -204,6 +209,8 @@ async def upload_revision(quotation_id: str, expected_version: int = Form(alias=
     with database_operation(db):
         item = find(db, quotation_id)
         if data is not None:
+            if "customer_id" not in data.model_fields_set:
+                data = data.model_copy(update={"customer_id": item.customer_id})
             data, _ = quote_defaults(db, data, uploaded=True)
             validate_link(db, data.customer_id, data.customer, item)
             document = snapshot(data, uploaded=True)

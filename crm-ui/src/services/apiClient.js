@@ -1,4 +1,6 @@
-const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
+// Development always uses Vite's local /api proxy, even if a stale cloud URL
+// exists in a developer's environment. Production can use its own build setting.
+const API_BASE_URL = import.meta.env?.DEV ? "" : (import.meta.env?.VITE_API_BASE_URL || "").replace(/\/$/, "");
 let accessToken = null;
 let refreshPromise = null;
 let authGeneration = 0;

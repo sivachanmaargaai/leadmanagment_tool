@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.git/
+.env
+.env.*
+test-results/
+playwright-report/
+src-before-encoding-fix/
+*.zip
+*.rar
+*.log

@@ -22,7 +22,7 @@ class Lead(Base):
     )
 
     customer: Mapped[str] = mapped_column(
-        String(100), nullable=False
+        String(120), nullable=False
     )
 
     contact: Mapped[str] = mapped_column(

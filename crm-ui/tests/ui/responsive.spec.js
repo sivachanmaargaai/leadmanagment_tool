@@ -33,7 +33,7 @@ for (const viewport of [{ width: 320, height: 740 }, { width: 375, height: 812 }
     if (viewport.width >= 1024) expect(box.x).toBeGreaterThan(navBox.x + navBox.width);
     await noHorizontalOverflow(page);
     await page.screenshot({ path: testInfo.outputPath(`settings-users-${viewport.width}.png`), fullPage: true });
-    for (const name of ["My profile", "Company & divisions", "Lead settings", "Products & quotations", "Notifications", "Workspace"]) {
+    for (const name of ["My profile", "Company & divisions", "Lead settings", "Products & quotations", "Roles & permissions", "Notifications", "Workspace"]) {
       await settingsTab(page, name);
       await noHorizontalOverflow(page);
     }

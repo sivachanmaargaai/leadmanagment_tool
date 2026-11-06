@@ -27,7 +27,7 @@ IST = timezone(timedelta(hours=5, minutes=30))
 LABEL = "[QA TEST] "
 PREFIX = "QA-DEMO-"
 COMPANIES = ["Aster Embedded Systems", "Beacon IoT Labs", "Cedar Cloud Solutions", "Delta Automation", "Elm Controls"]
-DIVISIONS = ["Nemilinks", "MMC", "ClearCode Labs", "Nemilinks", "MMC"]
+DIVISIONS = ["nemilink", "MMC", "ClearCode Labs", "nemilink", "MMC"]
 STATUSES = ["New", "In Progress", "Follow-up", "Won", "Lost"]
 PRIORITIES = ["High", "Medium", "High", "Low", "Medium"]
 SOURCES = ["Direct Enquiry", "Referral", "Known Network", "Website", "Phone"]

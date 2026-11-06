@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from app.db.database import Base, get_db
 from app.main import app
 from app.models.user import User
+from app.models.role_permissions import RolePermissions
 from auth_helpers import isolate_request_limits, TEST_PASSWORD, test_password_hash
 
 
@@ -20,9 +21,11 @@ class CrmAccessTests(unittest.TestCase):
         self.engine = create_engine(f"sqlite:///{Path(self.directory.name) / 'access.db'}", connect_args={"check_same_thread": False})
         Base.metadata.create_all(self.engine)
         self.db = Session(self.engine)
+        # Row-scope tests explicitly grant the module; default-deny is covered separately.
         self.accounts = [User(email=f"access{number}@example.test", name="Same Name" if number > 1 else f"Admin {number}",
-                              role="Admin" if number < 2 else "Staff", is_owner=number == 0,
+                              role="Admin" if number < 2 else "Staff", quotation_access=number > 1, is_owner=number == 0,
                               admin_slot=number + 1 if number < 2 else None, password_hash=test_password_hash()) for number in range(4)]
+        self.db.add(RolePermissions(role="Staff", quotations=True))
         self.db.add_all(self.accounts)
         self.db.commit()
         app.dependency_overrides[get_db] = lambda: self.db

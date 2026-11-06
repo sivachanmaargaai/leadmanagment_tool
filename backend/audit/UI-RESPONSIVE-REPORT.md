@@ -56,3 +56,8 @@ Playwright is pinned as a development dependency; fixtures intercept `/api/**` r
 This verifies rendered Chrome layouts and emulated touch/viewport behavior, not physical iOS/Safari/Firefox certification or live-backend end-to-end workflows. Browser fixtures complement the previous real API tests; they do not replace staging verification. User-provided real data and browser zoom/accessibility combinations may warrant additional staging checks.
 
 Next implementation stage: stable customer-ID relationships and remaining large-data UI query optimization, followed by realistic load testing and staging. Automatic backups/offsite configuration stay deferred as requested.
+
+
+## Customer-ID / query follow-up (2026-11-06)
+
+Core registers now query one server page at a time; dashboard counts are SQL aggregates. Five additional browser tests verify 10,000-record fixture pagination/search, bounded customer/lead selectors and explicit overview errors. See [implementation and deployment limit](CUSTOMER-LINKS-LARGE-DATA-REPORT.md). Live PostgreSQL migration is pending database connectivity; Staff module visibility controls remain a separate next change.

@@ -1,6 +1,6 @@
 """Explicit CRM query and mutation policy. Display names never grant access."""
 from fastapi import Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, false
 from app.core.security import get_current_user
 from app.db.database import get_db
 from app.models.lead import Lead
@@ -26,6 +26,10 @@ def actor(db):
 
 def scoped(db, query, model):
     user = actor(db)
+    from app.models.quotation import Quotation
+    from app.services.permissions import quotations_allowed
+    if model is Quotation and not quotations_allowed(user):
+        return query.where(false())
     if user is not None and user.role == "Staff":
         if model is FollowUp:
             return query.where(FollowUp.lead_id.in_(select(Lead.id).where(Lead.assignee_user_id == user.id)))

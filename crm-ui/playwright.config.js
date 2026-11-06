@@ -19,6 +19,8 @@ export default defineConfig({
     command: "npm run dev -- --host 127.0.0.1 --port 5174 --strictPort",
     url: "http://127.0.0.1:5174",
     reuseExistingServer: false,
+    // Deliberately stale cloud setting: development must still use local /api.
+    env: { VITE_API_BASE_URL: "https://cloud-api.example.invalid" },
     timeout: 30000,
   },
 });

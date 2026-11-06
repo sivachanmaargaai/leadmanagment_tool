@@ -13,6 +13,8 @@ from app.core.config import settings
 from app.db.database import get_db
 from app.db.operations import database_operation
 from app.models.user import AccessToken, AuthSession, User
+from app.models.role_permissions import RolePermissions
+from app.services.permissions import attach_role_permissions
 from app.services.request_limits import enforce_user_limits
 
 passwords = PasswordHash.recommended()
@@ -51,12 +53,13 @@ def get_current_user(request: Request, credentials: Annotated[HTTPAuthorizationC
     if credentials is None or len(credentials.credentials) > 256:
         raise unauthorized()
     with database_operation(db):
-        result = db.execute(select(AccessToken, AuthSession, User).join(AuthSession, AuthSession.id == AccessToken.session_id)
-                            .join(User, User.id == AuthSession.user_id).where(
+        result = db.execute(select(AccessToken, AuthSession, User, RolePermissions).select_from(AccessToken).join(AuthSession, AuthSession.id == AccessToken.session_id)
+                            .join(User, User.id == AuthSession.user_id).outerjoin(RolePermissions, RolePermissions.role == "Staff").where(
                                 AccessToken.token_hash == token_hash(credentials.credentials))).first()
         if result is None:
             raise unauthorized()
-        token, session, user = result
+        token, session, user, policy = result
+        attach_role_permissions(user, policy)
         at = now()
         if not session_active(session, user, at) or utc(token.expires_at) <= at:
             raise unauthorized()
@@ -71,3 +74,9 @@ def require_auth_request(request: Request):
     origin = request.headers.get("Origin")
     if origin is not None and origin not in settings.ALLOWED_ORIGINS:
         raise HTTPException(403, "Authentication origin is not allowed")
+
+
+def require_quotation_user(user: User = Depends(get_current_user)):
+    from app.services.permissions import require_quotations
+    require_quotations(user)
+    return user

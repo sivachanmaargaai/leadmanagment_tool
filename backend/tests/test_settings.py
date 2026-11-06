@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.db.database import Base, get_db
 from app.main import app
 from app.models.user import User
+from app.models.role_permissions import RolePermissions
 from auth_helpers import isolate_request_limits, TEST_PASSWORD, test_password_hash
 
 
@@ -25,7 +26,8 @@ class SettingsScenarios(unittest.TestCase):
         Base.metadata.create_all(self.engine)
         self.db = Session(self.engine)
         self.owner = User(name="Owner", email="owner@example.test", password_hash=test_password_hash(), role="Admin", is_owner=True, admin_slot=1)
-        self.staff = User(name="Staff", email="staff@example.test", password_hash=test_password_hash(), role="Staff")
+        self.staff = User(name="Staff", email="staff@example.test", password_hash=test_password_hash(), role="Staff", quotation_access=True)
+        self.db.add(RolePermissions(role="Staff", quotations=True))
         self.db.add_all([self.owner, self.staff])
         self.db.commit()
         app.dependency_overrides[get_db] = lambda: self.db
@@ -76,7 +78,7 @@ class SettingsScenarios(unittest.TestCase):
 
     def test_02_personal_profile_preferences_are_isolated_and_password_change_revokes_sessions(self):
         initial = self.settings()
-        workspace = {**initial["workspace"], "rowsPerPage": 25, "dateFormat": "YYYY-MM-DD", "sidebar": "Always expanded", "defaultDivision": "Nemilinks"}
+        workspace = {**initial["workspace"], "rowsPerPage": 25, "dateFormat": "YYYY-MM-DD", "sidebar": "Always expanded", "defaultDivision": "nemilink"}
         saved = self.save({"expectedPersonalVersion": 0, "expectedProfileVersion": 1,
             "profile": {"name": "Updated Owner", "phone": "QA phone", "designation": "Director"}, "workspace": workspace,
             "notifications": {**initial["notifications"], "sound": True, "reminderBefore": 120, "overdue": False}})

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
+from app.services.permissions import resolve_role_permissions
 from app.core.security import get_current_user, now, passwords
 from app.db.database import get_db
 from app.db.operations import database_operation
@@ -33,7 +34,7 @@ def list_users(response: Response, actor: User = Depends(get_current_user), db: 
             query = query.where(User.role == "Staff") if actor.role == "Admin" else query.where(User.id == actor.id)
         users = db.scalars(query.order_by(User.is_owner.desc(), User.role.asc(), User.name.asc())).all()
         response.headers["Cache-Control"] = "no-store"
-        return UserDirectory(users=[ManagedUser.model_validate(item) for item in users], canManageUsers=actor.is_owner,
+        return UserDirectory(users=[ManagedUser.model_validate(resolve_role_permissions(db, item)) for item in users], canManageUsers=actor.is_owner, canManageRolePermissions=actor.role == "Admin",
                              adminCount=db.scalar(select(func.count()).select_from(User).where(User.role == "Admin")) if actor.is_owner else None,
                              scope="All accounts" if actor.is_owner else "Staff only" if actor.role == "Admin" else "My profile")
 
@@ -45,7 +46,7 @@ def get_user(user_id: str, response: Response, actor: User = Depends(get_current
         if target is None or not can_read(actor, target):
             raise HTTPException(404, "Account not found")
         response.headers["Cache-Control"] = "no-store"
-        return target
+        return resolve_role_permissions(db, target)
 
 
 @router.post("", status_code=201, response_model=ManagedUser)
@@ -60,7 +61,7 @@ def create_user(data: UserCreate, actor: User = Depends(require_owner), db: Sess
         db.add(UserAuditEvent(actor_id=actor.id, target_id=item.id, action="Account created", changes={"after": snapshot(item)}))
         db.commit()
         db.refresh(item)
-        return item
+        return resolve_role_permissions(db, item)
 
 
 @router.put("/{user_id}", response_model=ManagedUser)
@@ -82,6 +83,8 @@ def update_user(user_id: str, data: UserUpdate, actor: User = Depends(require_ow
         before = snapshot(target)
         revoke = raw_password is not None or any(key in changes and changes[key] != getattr(target, key) for key in ["email", "role", "is_active"])
         changes.update(admin_slot=2 if role == "Admin" else None, version=target.version + 1)
+        if role != target.role:
+            changes["quotation_access"] = False
         if raw_password is not None:
             changes["password_hash"] = passwords.hash(raw_password)
         changed = db.execute(update(User).where(User.id == user_id, User.version == data.expected_version)
@@ -96,4 +99,11 @@ def update_user(user_id: str, data: UserUpdate, actor: User = Depends(require_ow
                              changes={"before": before, "after": snapshot(target), "passwordChanged": raw_password is not None,
                                       "sessionsRevoked": revoke}))
         db.commit()
-        return target
+        return resolve_role_permissions(db, target)
+
+
+@router.put("/{user_id}/quotation-access", deprecated=True)
+def retired_individual_access(user_id: str, actor: User = Depends(get_current_user)):
+    if actor.role != "Admin":
+        raise HTTPException(403, "Only administrators can manage permissions")
+    raise HTTPException(410, "Individual permissions were replaced by Settings > Roles & permissions")

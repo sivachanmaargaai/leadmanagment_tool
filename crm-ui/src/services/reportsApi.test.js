@@ -4,7 +4,7 @@ import { getReport, getReports, reportQuery } from "./reportsApi.js";
 import { csvText, datePreset } from "../lib/reports.js";
 
 test("report queries apply only valid shared and module-specific filters", () => {
-  const filters = { startDate: "2026-11-01", endDate: "2026-11-04", division: "Nemilinks", includeTestData: true, leadStatus: "Won", quoteStatus: "Accepted", followUpStatus: "Pending", refresh: 7 };
+  const filters = { startDate: "2026-11-01", endDate: "2026-11-04", division: "nemilink", includeTestData: true, leadStatus: "Won", quoteStatus: "Accepted", followUpStatus: "Pending", refresh: 7 };
   assert.equal(new URLSearchParams(reportQuery(filters, "leads")).get("status"), "Won");
   assert.equal(new URLSearchParams(reportQuery(filters, "sales")).get("status"), "Accepted");
   assert.equal(new URLSearchParams(reportQuery(filters, "follow-ups")).get("status"), "Pending");

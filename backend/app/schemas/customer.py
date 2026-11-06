@@ -63,6 +63,8 @@ class CustomerUpdate(UpdateModel):
 
 
 class CustomerResponse(CustomerBase):
+    lead_count: int = Field(default=0, alias="leadCount")
+    stage: str = "Prospect"
     version: int
     assignee_user_id: str | None = Field(default=None, alias="assigneeUserId")
     id: str
