@@ -1,18 +1,18 @@
 import logging
 import math
+import secrets
 from datetime import timedelta
-from urllib.parse import urlencode
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 
 from app.core.config import settings
-from app.core.security import new_token, now, token_hash, utc
+from app.core.security import now, token_hash, utc
 from app.db.database import SessionLocal
 from app.models.password_reset import PasswordResetToken, RecoveryRateBucket
 from app.models.user import User
-from app.services.mailer import send_reset_message
+from app.services.mailer import send_otp_message
 
 logger = logging.getLogger(__name__)
 
@@ -34,26 +34,31 @@ def consume_limit(db, scope, identity, maximum, window_seconds, cooldown_seconds
         bucket.count += 1
         bucket.last_allowed_at = at
     db.commit()
-    return allowed, cooldown_wait if cooldown_wait > 0 else window_wait
+    return allowed, window_wait if bucket.count >= maximum else max(1, cooldown_wait)
 
 
-def deliver_password_reset(email):
-    """Background task owns its database sessions; raw reset tokens never persist or log."""
+def deliver_password_reset(email, challenge):
+    """Persist only hashes. Challenge is a random secret, separately delivered to the browser."""
     reset_id = None
     try:
         with SessionLocal() as db:
-            user = db.scalar(select(User).where(User.email == email, User.is_active.is_(True)))
+            user = db.scalar(select(User).where(User.email == email, User.is_active.is_(True)).with_for_update())
             if user is None:
                 return
-            raw = new_token()
-            token = PasswordResetToken(user_id=user.id, user_version=user.version, token_hash=token_hash(raw),
-                                       expires_at=now() + timedelta(minutes=settings.RESET_LINK_MINUTES))
+            at = now()
+            db.execute(update(PasswordResetToken).where(PasswordResetToken.user_id == user.id,
+                PasswordResetToken.consumed_at.is_(None)).values(consumed_at=at))
+            code = f"{secrets.randbelow(1000000):06d}"
+            token = PasswordResetToken(user_id=user.id, user_version=user.version, token_hash=token_hash(challenge),
+                recovery_kind="otp", otp_hash=token_hash(challenge + ":" + code),
+                expires_at=at + timedelta(minutes=settings.OTP_MINUTES))
             db.add(token)
             db.commit()
             reset_id = token.id
-            link = settings.RESET_BASE_URL.rstrip("/") + "/#reset-password?" + urlencode({"token": raw})
-            send_reset_message(user.email, link, settings.RESET_LINK_MINUTES)
-            token.delivery_status = "sent"
+            send_otp_message(user.email, code, settings.OTP_MINUTES)
+            # Do not revive a challenge invalidated by a resend/account change.
+            db.execute(update(PasswordResetToken).where(PasswordResetToken.id == reset_id,
+                PasswordResetToken.consumed_at.is_(None)).values(delivery_status="sent"))
             db.commit()
     except Exception as error:
         # SMTP exceptions may contain addresses or provider data: never log their messages/tracebacks.

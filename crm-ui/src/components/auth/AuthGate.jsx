@@ -56,7 +56,7 @@ export default function AuthGate({ children }) {
   }
 
   if (resetLink) return <ResetPassword link={resetLink} onComplete={() => { setResetLink(null); setRecovering(false); setSession({ checking: false, user: null, error: "" }); setNotice("Password reset. Sign in with your new password."); }} onRequestNew={() => { setResetLink(null); setRecovering(true); }} onBack={() => setResetLink(null)} />;
-  if (recovering) return <ForgotPassword initialEmail={email} onBack={() => setRecovering(false)} />;
+  if (recovering) return <ForgotPassword initialEmail={email} onBack={() => setRecovering(false)} onComplete={() => { setRecovering(false); setSession({ checking: false, user: null, error: "" }); setNotice("Password reset. Sign in with your new password."); }} />;
   if (session.checking) return <div role="status" className="flex min-h-dvh items-center justify-center bg-[#f4f7f5] p-5 text-sm font-medium text-slate-800">Checking your session...</div>;
   if (session.user) return <>{session.error && <p role="alert" className="bg-rose-50 px-4 py-3 text-sm text-rose-900">{session.error}</p>}{children({ user: session.user, onLogout: signOut, signingOut: busy, onProfileUpdated: updateProfile })}</>;
 

@@ -1,0 +1,9 @@
+# Quotation logo packaging fix - 2026-11-06
+
+The backend PDF generator previously looked for `crm-ui/public/Engen logo Final.png` outside its Docker build context, so Linux releases fell back to company-name text. The existing ENGEN logo is now copied unchanged to `backend/app/assets/engen-logo.png`; the generator resolves it relative to its own application package. Docker COPY includes it automatically, with no frontend mount, network fetch or secret configuration.
+
+The existing showLogo setting, aspect ratio/header placement, company-name fallback and historical PDF snapshots are preserved. Stored quotation/PDF rows were not rewritten. New quotations or newly generated document revisions use the packaged asset. If the source brand logo is changed later, update the corresponding backend asset as well; custom-logo upload is outside this change.
+
+Verification: a sample quotation PDF was generated, rendered to PNG and visually inspected. Tests verify a real embedded image on every page of a multi-page PDF, disabled-logo text fallback and safe handling of a missing asset. Full backend regression: 138 passed. Frontend service suite: 61 passed. Actual Linux backend image: 3 branding tests passed. Disposable backend/frontend container smoke checks passed, including Nginx HTTPS proxying to leadmanagement-backend-v1-1.onrender.com. Local .env files and nested source backups are excluded from the published backend image.
+
+The existing Docker Hub backend v1.1 tag is updated for this fix. A Render backend Deploy latest reference is still required to activate it there; the frontend needs no new deployment for this backend-only asset fix. Source is prepared for the explicitly requested GitHub synchronization; secrets, generated previews, ZIP archives, patch exports and temporary batch artifacts are excluded.

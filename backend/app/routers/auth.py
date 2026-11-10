@@ -1,4 +1,5 @@
 from datetime import timedelta
+import secrets
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, Response
@@ -14,7 +15,7 @@ from app.db.database import get_db
 from app.db.operations import database_operation
 from app.models.user import AccessToken, AuthSession, RefreshToken, User
 from app.models.password_reset import PasswordResetToken
-from app.schemas.auth import ForgotPasswordRequest, LoginRequest, LoginResponse, PasswordChange, ResetPasswordRequest, UserResponse
+from app.schemas.auth import ForgotPasswordRequest, LoginRequest, LoginResponse, PasswordChange, ResetPasswordRequest, UserResponse, VerifyRecoveryOtpRequest
 from app.services.password_recovery import consume_limit, deliver_password_reset
 from app.services.request_limits import enforce_login_limits
 from app.services.permissions import resolve_role_permissions
@@ -35,13 +36,47 @@ def forgot_password(data: ForgotPasswordRequest, request: Request, response: Res
         allowed, wait = consume_limit(db, "forgot-ip", request.client.host if request.client else "unknown", 10, 900)
         if not allowed:
             raise HTTPException(429, "Too many recovery requests. Try again later", headers={"Retry-After": str(wait), "Cache-Control": "no-store"})
-        allowed, _ = consume_limit(db, "forgot-email", data.email, 3, 1800, 60)
-        if allowed:
-            # Database lookup and SMTP happen after the generic response is sent.
-            background.add_task(deliver_password_reset, data.email)
+        allowed, wait = consume_limit(db, "forgot-email", data.email, 3, 1800, 60)
+        if not allowed:
+            raise HTTPException(429, "Please wait before requesting another code", headers={"Retry-After": str(wait), "Cache-Control": "no-store"})
+        challenge = new_token()
+        # Unknown/inactive addresses get the same response and random challenge shape.
+        background.add_task(deliver_password_reset, data.email, challenge)
         response.headers["Cache-Control"] = "no-store"
-        return {"message": "If an active account matches that email, a password-reset link will be sent. Check your inbox and spam folder.",
-                "expiresInMinutes": settings.RESET_LINK_MINUTES}
+        return {"message": "If an active account matches that email, a password reset code will be sent. Check your inbox and spam folder.",
+                "challengeId": challenge, "expiresInMinutes": settings.OTP_MINUTES, "resendAfterSeconds": 60}
+
+
+@router.post("/verify-reset-otp", dependencies=[Depends(require_auth_request)])
+def verify_reset_otp(data: VerifyRecoveryOtpRequest, request: Request, response: Response, db: Session = Depends(get_db)):
+    recovery_available()
+    with database_operation(db):
+        allowed, wait = consume_limit(db, "otp-ip", request.client.host if request.client else "unknown", 20, 900)
+        if not allowed:
+            raise HTTPException(429, "Too many code attempts. Try again later", headers={"Retry-After": str(wait), "Cache-Control": "no-store"})
+        invalid = HTTPException(400, "Code is invalid, expired or already used. Request a new code if needed", headers={"Cache-Control": "no-store"})
+        token = db.scalar(select(PasswordResetToken).where(PasswordResetToken.token_hash == token_hash(data.challengeId)))
+        if token is None:
+            raise invalid
+        user = db.scalar(select(User).where(User.id == token.user_id).with_for_update().execution_options(populate_existing=True))
+        token = db.scalar(select(PasswordResetToken).where(PasswordResetToken.id == token.id).with_for_update().execution_options(populate_existing=True))
+        at = now()
+        if (user is None or token is None or not user.is_active or token.recovery_kind != "otp"
+                or token.consumed_at is not None or token.verified_at is not None or token.delivery_status != "sent"
+                or utc(token.expires_at) <= at or token.user_version != user.version or token.failed_attempts >= 5):
+            raise invalid
+        if not secrets.compare_digest(token.otp_hash or "", token_hash(data.challengeId + ":" + data.code)):
+            token.failed_attempts += 1
+            if token.failed_attempts >= 5:
+                token.consumed_at = at
+            db.commit()  # Failed attempts must survive database_operation's error rollback.
+            raise invalid
+        grant = new_token()
+        token.token_hash, token.otp_hash, token.verified_at = token_hash(grant), None, at
+        token.expires_at = at + timedelta(minutes=5)
+        db.commit()
+        response.headers["Cache-Control"] = "no-store"
+        return {"resetToken": grant, "expiresInMinutes": 5}
 
 
 @router.post("/reset-password", status_code=204, dependencies=[Depends(require_auth_request)])
@@ -51,7 +86,7 @@ def reset_password(data: ResetPasswordRequest, request: Request, response: Respo
         allowed, wait = consume_limit(db, "reset-ip", request.client.host if request.client else "unknown", 20, 900)
         if not allowed:
             raise HTTPException(429, "Too many reset attempts. Try again later", headers={"Retry-After": str(wait), "Cache-Control": "no-store"})
-        invalid = HTTPException(400, "This reset link is invalid, expired or already used. Request a new link", headers={"Cache-Control": "no-store"})
+        invalid = HTTPException(400, "Password reset authorization is invalid, expired or already used. Request a new code", headers={"Cache-Control": "no-store"})
         token = db.scalar(select(PasswordResetToken).where(PasswordResetToken.token_hash == token_hash(data.token)))
         if token is None:
             raise invalid
@@ -59,7 +94,9 @@ def reset_password(data: ResetPasswordRequest, request: Request, response: Respo
         user = db.scalar(select(User).where(User.id == token.user_id).with_for_update().execution_options(populate_existing=True))
         token = db.scalar(select(PasswordResetToken).where(PasswordResetToken.id == token.id).with_for_update().execution_options(populate_existing=True))
         at = now()
-        if user is None or token is None or not user.is_active or token.consumed_at is not None or utc(token.expires_at) <= at or token.user_version != user.version:
+        if (user is None or token is None or not user.is_active or token.consumed_at is not None
+                or utc(token.expires_at) <= at or token.user_version != user.version
+                or (token.recovery_kind == "otp" and token.verified_at is None)):
             raise invalid
         changed = db.execute(update(User).where(User.id == user.id, User.version == token.user_version)
             .values(password_hash=passwords.hash(data.newPassword), version=user.version + 1).execution_options(synchronize_session=False))

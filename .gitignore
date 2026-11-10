@@ -19,6 +19,10 @@ build/
 *.rar
 *.zip
 *.7z
+*.bak
+
+# Generated PDF review artifacts
+/output/pdf/
 
 # Local files
 .DS_Store

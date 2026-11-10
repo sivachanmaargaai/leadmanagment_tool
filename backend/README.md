@@ -1,5 +1,11 @@
 # ENGEN CRM API
 
+## Current release - 2026-11-06
+
+Email OTP recovery and Gmail API delivery are implemented and verified; the user confirmed the deployed reset flow works. Backend/frontend source must be released together. Database migration head is `20261106_0015`. See [current recovery behavior](audit/PASSWORD-RECOVERY-REPORT.md) and [remaining work](audit/PENDING-WORK-REVIEW-20261106.md); earlier counts and pending lists below are historical implementation notes.
+
+Quotation PDFs use the packaged backend asset `app/assets/engen-logo.png`, copied unchanged from the ENGEN frontend logo. The backend Docker build includes it without depending on a frontend directory. The existing show-logo toggle and company-text fallback remain supported. Only newly generated PDFs/revisions use this asset; previously stored PDF bytes remain unchanged. Tests verify logo embedding on every page, disabled-logo rendering and the missing-asset fallback.
+
 Run commands from `D:/CRM-TOOL/backend`.
 
 ```powershell
@@ -144,9 +150,13 @@ The frontend does not silently migrate or erase profiles saved in the earlier br
 
 ## Forgot-password recovery (2026-11-05)
 
-Migration `20261105_0007` is applied to local PostgreSQL; existing accounts and CRM row counts were preserved. POST `/api/auth/forgot-password` sends a generic accepted response; POST `/api/auth/reset-password` validates a single-use link, changes the password and revokes all sessions. Both require X-CRM-Request: 1 and an allowed Origin when present. Recovery-specific database-backed throttles are implemented. Mail uses existing-mailbox SMTP with verified STARTTLS or SSL. Configure the new fields from `.env.example` locally and restart; recovery remains disabled until then. No real email has been sent during verification.
+Password recovery now uses an email OTP: `POST /api/auth/forgot-password` returns a generic accepted response with a random browser challenge; `POST /api/auth/verify-reset-otp` verifies the 6-digit code and returns a single-use 5-minute reset authorization; `POST /api/auth/reset-password` changes the password and revokes all sessions. New codes expire after 10 minutes (configurable 5–15), allow at most five wrong attempts, and invalidate previous recovery challenges. All requests require `X-CRM-Request: 1` and an allowed Origin when present. Existing unexpired reset links remain compatible during rollout.
 
-See [configuration, checks and remaining limits](audit/PASSWORD-RECOVERY-REPORT.md). Recovery tests add eight backend and five frontend scenarios to the previous suites. PostgreSQL integration passed with mocked mail and a rolled-back QA schema. Durable email workers/retries, real-mailbox delivery verification and browser interaction QA remain pending.
+For Render, set `MAIL_PROVIDER=gmail`, `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_SENDER=engenwebsite@gmail.com`, and `PASSWORD_RECOVERY_ENABLED=true` only after configuration and migrations. Gmail uses HTTPS OAuth token refresh and the Gmail API, without SMTP ports or a Gmail account password. Store secrets in backend Render Environment; local development uses `backend/.env.local`. Never put these values in frontend variables or Git. Google OAuth Testing mode issues Gmail refresh tokens that expire after seven days; configure production publishing and any applicable verification requirements before live use.
+
+Migrate before starting the new backend: `python -m alembic upgrade head`. Migration `20261106_0014` adds OTP metadata; `20261106_0015` safely aligns legacy lead customer name columns with the 120-character model. Follow-up verification: `python -B scripts/verify_password_recovery.py` uses mocked mail and disposable QA schemas, verifies migration/account preservation, single-use reset and PostgreSQL concurrency. It sends no real email and does not reset real accounts.
+
+See [recovery configuration, checks and limitations](audit/PASSWORD-RECOVERY-REPORT.md). Email delivery uses an in-process FastAPI background task, not a durable worker. Real Gmail delivery and the deployed HTTPS flow still need an explicit smoke test after release configuration.
 
 ## Staff CRM access (2026-11-05)
 

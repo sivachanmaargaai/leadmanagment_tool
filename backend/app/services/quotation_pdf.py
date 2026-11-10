@@ -12,7 +12,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 
-ROOT = Path(__file__).resolve().parents[3]
+LOGO_PATH = Path(__file__).resolve().parents[1] / "assets" / "engen-logo.png"
 FONT = "Helvetica"
 BOLD = "Helvetica-Bold"
 if Path("C:/Windows/Fonts/arial.ttf").is_file():
@@ -46,7 +46,7 @@ def generate_pdf(snapshot):
         canvas.saveState()
         canvas.setFillColor(colors.HexColor("#075854"))
         canvas.rect(0, 829, 595.28, 13, fill=1, stroke=0)
-        logo = ROOT / "crm-ui" / "public" / "Engen logo Final.png"
+        logo = LOGO_PATH
         if presentation.get("showLogo") and logo.is_file():
             canvas.drawImage(ImageReader(str(logo)), 40, 746, width=140, height=73, preserveAspectRatio=True, mask="auto")
         else:

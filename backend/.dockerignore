@@ -9,6 +9,14 @@ __pycache__/
 .pytest_cache/
 .git/
 *.rar
+*.zip
+*.7z
+*.bak
+*.patch
+**/*.bak
+**/*.zip
+**/*.7z
+**/*.patch
 *.log
 tmp/
 var/

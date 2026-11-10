@@ -30,7 +30,7 @@ def main():
     config = Config(str(Path(__file__).resolve().parents[1] / "alembic.ini"))
     config.set_main_option("script_location", str(Path(__file__).resolve().parents[1] / "migrations"))
     with engine.begin() as connection:
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) in {"20261105_0010", "20261105_0011", "20261106_0012", "20261106_0013"}
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) in {"20261105_0010", "20261105_0011", "20261106_0012", "20261106_0013", "20261106_0014", "20261106_0015"}
         users = connection.execute(text("SELECT to_jsonb(t) - 'quotation_access' FROM users t ORDER BY id")).all()
         snapshots = {name: connection.execute(text(f"SELECT to_jsonb(t) - 'version' - 'customer_id' FROM {name} t ORDER BY id")).all() for name in ["leads", "customers", "quotations"]}
         files = connection.execute(text("SELECT id, sha256, md5(content), snapshot FROM quotation_files ORDER BY id")).all()

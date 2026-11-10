@@ -27,13 +27,13 @@ def main():
     config.set_main_option("script_location", str(Path(__file__).resolve().parents[1] / "migrations"))
     with engine.begin() as connection:
         previous = connection.scalar(text("SELECT version_num FROM alembic_version"))
-        assert previous in {"20261106_0012", "20261106_0013"}, "Unexpected migration revision"
+        assert previous in {"20261106_0012", "20261106_0013", "20261106_0014", "20261106_0015"}, "Unexpected migration revision"
         users = connection.execute(text("SELECT * FROM users ORDER BY id")).all()
         sessions = connection.execute(text("SELECT * FROM auth_sessions ORDER BY id")).mappings().all()
         staff_ids = set(connection.execute(text("SELECT id FROM users WHERE role='Staff'")).scalars())
         counts = {name: connection.scalar(text(f"SELECT count(*) FROM {name}")) for name in ["leads", "customers", "follow_ups", "quotations", "quotation_files"]}
         config.attributes["connection"] = connection
-        command.upgrade(config, "20261106_0013")
+        command.upgrade(config, "head")
         assert users == connection.execute(text("SELECT * FROM users ORDER BY id")).all()
         after_sessions = {row["id"]: row for row in connection.execute(text("SELECT * FROM auth_sessions ORDER BY id")).mappings()}
         for original in sessions:

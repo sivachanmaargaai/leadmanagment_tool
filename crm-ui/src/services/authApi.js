@@ -17,7 +17,15 @@ export async function logout(allDevices = false) {
 
 export async function forgotPassword(email) {
   const result = await apiRequest("/api/auth/forgot-password", { method: "POST", auth: false, skipAuthRetry: true, body: JSON.stringify({ email }) });
-  if (typeof result?.message !== "string" || !Number.isFinite(result.expiresInMinutes)) throw new Error("The recovery API returned an invalid response.");
+  if (typeof result?.message !== "string" || !Number.isFinite(result.expiresInMinutes)
+    || !/^[A-Za-z0-9_-]{43,128}$/.test(result.challengeId ?? "")
+    || !Number.isFinite(result.resendAfterSeconds)) throw new Error("The recovery API returned an invalid response.");
+  return result;
+}
+
+export async function verifyRecoveryOtp(challengeId, code) {
+  const result = await apiRequest("/api/auth/verify-reset-otp", { method: "POST", auth: false, skipAuthRetry: true, body: JSON.stringify({ challengeId, code }) });
+  if (!/^[A-Za-z0-9_-]{43,128}$/.test(result?.resetToken ?? "")) throw new Error("The recovery API returned an invalid response.");
   return result;
 }
 

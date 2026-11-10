@@ -89,13 +89,14 @@ class Settings(BaseSettings):
             sender = self.GMAIL_SENDER if self.MAIL_PROVIDER == "gmail" else self.SMTP_FROM
             if not re.fullmatch(r"[^\s@<>\r\n]+@[^\s@<>\r\n]+\.[^\s@<>\r\n]+", sender) or any(character in self.SMTP_FROM_NAME for character in "\r\n"):
                 raise ValueError("Configure a valid sender address and sender name")
-            base = urlsplit(self.RESET_BASE_URL)
-            if base.scheme not in {"http", "https"} or not base.netloc or base.username or base.password or base.query or base.fragment:
-                raise ValueError("RESET_BASE_URL must be a trusted frontend URL without credentials, query or fragment")
-            if f"{base.scheme}://{base.netloc}" not in self.ALLOWED_ORIGINS:
-                raise ValueError("RESET_BASE_URL must belong to an explicit ALLOWED_ORIGINS frontend")
-            if self.ENVIRONMENT == "production" and base.scheme != "https":
-                raise ValueError("Production reset links require HTTPS")
+            if self.MAIL_PROVIDER == "smtp":
+                base = urlsplit(self.RESET_BASE_URL)
+                if base.scheme not in {"http", "https"} or not base.netloc or base.username or base.password or base.query or base.fragment:
+                    raise ValueError("RESET_BASE_URL must be a trusted frontend URL without credentials, query or fragment")
+                if f"{base.scheme}://{base.netloc}" not in self.ALLOWED_ORIGINS:
+                    raise ValueError("RESET_BASE_URL must belong to an explicit ALLOWED_ORIGINS frontend")
+                if self.ENVIRONMENT == "production" and base.scheme != "https":
+                    raise ValueError("Production reset links require HTTPS")
         return self
 
     model_config = SettingsConfigDict(
