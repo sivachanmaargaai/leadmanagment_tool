@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Bell, LogOut, Menu, X } from "lucide-react";
-import { initials } from "../data/crm";
+import { divisionLabel, initials } from "../data/crm";
 import { IconButton } from "./ui";
 
 export default function Header({ page, alerts, onMenu, user, onLogout, signingOut, alertError }) {
@@ -75,7 +75,7 @@ export default function Header({ page, alerts, onMenu, user, onLogout, signingOu
                                                     {lead.description}
                                                 </p>
                                                 <p className="mt-2 text-[11px] font-medium text-teal-800">
-                                                    {lead.division} · {lead.alertLabel || "High priority"}
+                                                    {divisionLabel(lead.division)} · {lead.alertLabel || "High priority"}
                                                 </p>
                                             </div>
                                         </article>

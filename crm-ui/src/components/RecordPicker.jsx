@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import { getCustomersPage } from "../services/customersApi";
 import { getLeadsPage } from "../services/leadsApi";
+import { divisionLabel } from "../data/crm";
 
 // Explicit selection disambiguates identical names. Never downloads the directory.
 export default function RecordPicker({ kind = "customer", value, name = "", onChange, disabled = false }) {
@@ -29,7 +30,7 @@ export default function RecordPicker({ kind = "customer", value, name = "", onCh
       {current?.error && <p role="alert" className="text-xs text-rose-800">{current.error}</p>}
       {!current && <p className="text-xs text-slate-600">Searching…</p>}
       <div className="max-h-48 overflow-y-auto">{current?.data?.items.map((item) => <button key={item.id} type="button" className="block w-full break-words rounded-md p-2 text-left text-xs text-slate-950 hover:bg-teal-100 focus-visible:outline-2 focus-visible:outline-teal-700" onClick={() => { onChange(item); setOpen(false); }}>
-        <strong>{kind === "customer" ? item.name : item.customer}</strong><span className="ml-2 text-slate-600">{kind === "customer" ? item.contacts?.[0]?.email || item.city : `${item.division} · ${item.description?.slice(0, 60)}`}</span><small className="block text-slate-500">ID: {item.id}</small>
+        <strong>{kind === "customer" ? item.name : item.customer}</strong><span className="ml-2 text-slate-600">{kind === "customer" ? item.contacts?.[0]?.email || item.city : `${divisionLabel(item.division)} · ${item.description?.slice(0, 60)}`}</span><small className="block text-slate-500">ID: {item.id}</small>
       </button>)}</div>
       {current?.data && <p className="text-[11px] text-slate-600">Showing up to 20 of {current.data.total}. Refine the search to find another record.</p>}
     </div>}

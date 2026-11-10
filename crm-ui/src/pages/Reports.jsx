@@ -2,7 +2,7 @@ import { useSettings } from "../context/SettingsContext";
 import { canAccessQuotations } from "../lib/permissions";
 import { useEffect, useState } from "react";
 import { Download, RefreshCw, Filter } from "lucide-react";
-import { divisions } from "../data/crm";
+import { divisionLabel, divisions } from "../data/crm";
 import { Button, Card, CardHeading } from "../components/ui";
 import ReportTable from "../components/reports/ReportTable";
 import ReportBars from "../components/reports/ReportBars";
@@ -71,7 +71,7 @@ export default function Reports({ onNavigate }) {
 
   const rows = !data ? [] : tab === "Leads" ? data.leads.rows : tab === "Divisions" ? data.leads.byDivision : tab === "Follow-ups" ? data["follow-ups"].rows : tab === "Quotations" ? data.sales.rows : data.leads.bySource;
   const basis = data ? (tab === "Quotations" ? data.sales.dateBasis : tab === "Follow-ups" ? data["follow-ups"].dateBasis : data.leads.dateBasis) : "";
-  const notes = `${applied.startDate || "All dates"} to ${applied.endDate || "present"}; ${applied.division || "All divisions"}; ${applied[statusField] || "All statuses"}; Test data: ${applied.includeTestData ? "included" : "excluded"}. ${basis}. Accepted values are quotation commitments, not received revenue. Export includes all report rows; table search is for browsing only.`;
+  const notes = `${applied.startDate || "All dates"} to ${applied.endDate || "present"}; ${divisionLabel(applied.division || "All divisions")}; ${applied[statusField] || "All statuses"}; Test data: ${applied.includeTestData ? "included" : "excluded"}. ${basis}. Accepted values are quotation commitments, not received revenue. Export includes all report rows; table search is for browsing only.`;
 
   async function exportData(format) {
     setExporting(true); setExportError("");
@@ -89,7 +89,7 @@ export default function Reports({ onNavigate }) {
         <label className="space-y-1 text-xs font-semibold text-slate-800">Period<select className={field} value={preset} onChange={(event) => choosePreset(event.target.value)}><option value="all">All time</option><option value="today">Today</option><option value="week">This week</option><option value="month">This month</option><option value="custom">Custom dates</option></select></label>
         <label className="space-y-1 text-xs font-semibold text-slate-800">From<input type="date" className={field} value={draft.startDate} onChange={(event) => { setPreset("custom"); setDraft({ ...draft, startDate: event.target.value }); }} /></label>
         <label className="space-y-1 text-xs font-semibold text-slate-800">To<input type="date" className={field} value={draft.endDate} min={draft.startDate || undefined} onChange={(event) => { setPreset("custom"); setDraft({ ...draft, endDate: event.target.value }); }} /></label>
-        <label className="space-y-1 text-xs font-semibold text-slate-800">Division<select className={field} value={draft.division} onChange={(event) => setDraft({ ...draft, division: event.target.value })}><option value="">All divisions</option>{divisions.map((name) => <option key={name}>{name}</option>)}</select></label>
+        <label className="space-y-1 text-xs font-semibold text-slate-800">Division<select className={field} value={draft.division} onChange={(event) => setDraft({ ...draft, division: event.target.value })}><option value="">All divisions</option>{divisions.map((name) => <option key={name} value={name}>{divisionLabel(name)}</option>)}</select></label>
         <label className="space-y-1 text-xs font-semibold text-slate-800">{tab === "Quotations" ? "Quotation" : tab === "Follow-ups" ? "Follow-up" : "Lead"} status<select className={field} value={draft[statusField]} onChange={(event) => setDraft({ ...draft, [statusField]: event.target.value })}><option value="">All statuses</option>{statuses.map((name) => <option key={name}>{name}</option>)}</select></label>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3"><label className="flex min-h-10 cursor-pointer items-center gap-2 text-xs font-semibold text-slate-800"><input type="checkbox" checked={draft.includeTestData} onChange={(event) => setDraft({ ...draft, includeTestData: event.target.checked })} className="size-4 accent-teal-800" />Include test data</label><div className="flex flex-wrap gap-2"><Button variant="secondary" onClick={reset}>Reset</Button><Button type="submit" disabled={Boolean(invalidDates)}><Filter size={15} />Apply filters</Button></div></div>

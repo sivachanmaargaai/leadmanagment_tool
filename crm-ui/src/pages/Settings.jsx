@@ -21,7 +21,7 @@ import {
     Check,
 } from "lucide-react";
 import { Button, Card } from "../components/ui";
-import { divisions } from "../data/crm";
+import { divisionLabel, divisions } from "../data/crm";
 
 const tabs = [
     { id: "profile", label: "My profile", icon: UserRound },
@@ -63,7 +63,7 @@ function Select({ label, options, ...props }) {
             </span>
             <select className={inputClass} {...props}>
                 {options.map((option) => (
-                    <option key={option}>{option}</option>
+                    <option key={option} value={option}>{divisionLabel(option)}</option>
                 ))}
             </select>
         </label>

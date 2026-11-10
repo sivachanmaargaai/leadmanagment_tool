@@ -1,4 +1,8 @@
-export const divisions = ["MMC", "nemilink", "ClearCode Labs"];
+export const divisions = ["MMC", "nemilink", "ClearCode Labs", "ENGEN", "Visotonics", "Overview"];
+
+export function divisionLabel(value) {
+    return value === "nemilink" ? "Nemilink" : value;
+}
 
 export const statuses = [
     "New",

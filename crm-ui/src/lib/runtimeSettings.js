@@ -1,8 +1,12 @@
+import { divisions } from "../data/crm.js";
+
+const divisionPrefixes = { MMC: "MMC", nemilink: "NEM", "ClearCode Labs": "CCL", ENGEN: "ENG", Visotonics: "VIS", Overview: "OVW" };
+
 export function defaultSettings() {
   return {
     profile: { name: "", email: "", phone: "", designation: "" },
     company: { name: "ENGEN", email: "", phone: "", address: "", gst: "", website: "" },
-    divisions: Object.fromEntries(["MMC", "nemilink", "ClearCode Labs"].map((name, index) => [name, { name, address: "", gst: "", prefix: ["MMC", "NEM", "CCL"][index] }])),
+    divisions: Object.fromEntries(divisions.map((name) => [name, { name, address: "", gst: "", prefix: divisionPrefixes[name] }])),
     leads: { defaultPriority: "Medium", defaultStatus: "New", sources: ["Website", "Referral", "Phone", "Email", "Exhibition"], followUpDays: 2, requireContact: false, requireDescription: true },
     quotation: { prefix: "ENG", nextNumber: 1001, currency: "INR", validity: 15, tax: 0, paymentTerms: "", warranty: "", notes: "", showLogo: true, showSignature: true, approvalRequired: false },
     notifications: { leadPriority: true, followUp: true, overdue: true, quotationExpiry: true, reminderBefore: 30, sound: false },

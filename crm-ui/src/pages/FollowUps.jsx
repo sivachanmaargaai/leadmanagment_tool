@@ -4,7 +4,7 @@ import { getFollowUpsPage, createFollowUp, updateFollowUp } from "../services/fo
 import Pagination from "../components/Pagination";
 import { useState } from "react";
 import { CalendarClock, Plus, Search, Check, History, RefreshCw, Clock3, CheckCheck, AlertCircle } from "lucide-react";
-import { divisions } from "../data/crm";
+import { divisionLabel, divisions } from "../data/crm";
 import { Avatar, Button, Card, CardHeading, EmptyState, IconButton } from "../components/ui";
 import Modal from "../components/Modal";
 import FollowUpEditor from "../components/followups/FollowUpEditor";
@@ -69,7 +69,7 @@ export default function FollowUps({ now, onChanged }) {
         <label className="flex min-w-0 basis-full sm:basis-44 flex-1 items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-slate-700 focus-within:ring-2 focus-within:ring-teal-100">
           <Search size={16} /><input aria-label="Search follow-ups" placeholder="Customer, purpose or reference..." value={search} onChange={(event) => setSearch(event.target.value)} className="w-full bg-transparent text-xs outline-none placeholder:text-slate-500" />
         </label>
-        <select aria-label="Filter follow-ups by division" value={division} onChange={(event) => setDivision(event.target.value)} className={selectClass}><option>All divisions</option>{divisions.map((name) => <option key={name}>{name}</option>)}</select>
+        <select aria-label="Filter follow-ups by division" value={division} onChange={(event) => setDivision(event.target.value)} className={selectClass}><option>All divisions</option>{divisions.map((name) => <option key={name} value={name}>{divisionLabel(name)}</option>)}</select>
         <input aria-label="Filter follow-ups by staff" placeholder="Exact staff name" value={staff === "All staff" ? "" : staff} onChange={(event) => setStaff(event.target.value || "All staff")} maxLength={120} className={selectClass} />
         <input aria-label="Filter follow-ups by date" type="date" value={date} onChange={(event) => setDate(event.target.value)} className={selectClass} />
         {(search || date || staff !== "All staff" || division !== "All divisions" || tab !== "All") && <Button variant="secondary" onClick={() => { setSearch(""); setDate(""); setStaff("All staff"); setDivision("All divisions"); setTab("All"); }}>Clear filters</Button>}
@@ -78,7 +78,7 @@ export default function FollowUps({ now, onChanged }) {
         {pageRows.map((item) => {
           const overdue = isOverdue(item, now);
           return <article key={item.id} className={`min-w-0 rounded-xl border p-3 shadow-sm shadow-slate-900/5 ${overdue ? "border-rose-200 bg-rose-50/30" : "border-slate-200 bg-white"}`}>
-            <div className="flex items-start gap-2.5"><Avatar name={item.customer} /><div className="min-w-0 flex-1"><button type="button" onClick={() => setHistory(item)} className="break-words text-left text-xs font-bold text-slate-950 hover:text-teal-800">{item.customer}</button><p className="mt-1 text-[11px] text-slate-700">{item.division}</p></div><span className={`shrink-0 rounded-md px-2 py-1 text-[10px] font-semibold ${item.status === "Completed" ? "bg-emerald-50 text-emerald-900" : overdue ? "bg-rose-100 text-rose-900" : "bg-amber-50 text-amber-900"}`}>{overdue ? "Overdue" : item.status}</span></div>
+            <div className="flex items-start gap-2.5"><Avatar name={item.customer} /><div className="min-w-0 flex-1"><button type="button" onClick={() => setHistory(item)} className="break-words text-left text-xs font-bold text-slate-950 hover:text-teal-800">{item.customer}</button><p className="mt-1 text-[11px] text-slate-700">{divisionLabel(item.division)}</p></div><span className={`shrink-0 rounded-md px-2 py-1 text-[10px] font-semibold ${item.status === "Completed" ? "bg-emerald-50 text-emerald-900" : overdue ? "bg-rose-100 text-rose-900" : "bg-amber-50 text-amber-900"}`}>{overdue ? "Overdue" : item.status}</span></div>
             <p className="my-3 break-words text-xs font-medium leading-5 text-slate-900">{item.purpose}</p>
             <p className={`flex items-start gap-2 text-[11px] leading-5 ${overdue ? "font-semibold text-rose-800" : "text-slate-700"}`}><CalendarClock size={14} className="mt-0.5 shrink-0" />{formatFollowUpDate(item.dueAt)} IST</p>
             <dl className="mt-3 space-y-1.5 text-[11px]"><div className="flex justify-between gap-3"><dt className="shrink-0 text-slate-600">Referred by</dt><dd className="min-w-0 break-words text-right font-semibold text-teal-900">{item.referredBy?.name || "Not specified"}</dd></div><div className="flex justify-between gap-3"><dt className="text-slate-600">Assigned to</dt><dd className="min-w-0 break-words text-right text-slate-900">{item.assignedTo}</dd></div></dl>
@@ -95,7 +95,7 @@ export default function FollowUps({ now, onChanged }) {
           <tbody className="divide-y divide-slate-100">{pageRows.map((item) => {
             const overdue = isOverdue(item, now);
             return <tr key={item.id} className={`text-xs text-slate-800 transition-colors ${overdue ? "bg-rose-50/40 hover:bg-rose-50" : "hover:bg-teal-50/40"}`}>
-              <td className="px-5 py-4"><button type="button" onClick={() => setHistory(item)} className="flex items-center gap-3 text-left hover:text-teal-800"><Avatar name={item.customer} /><span><strong className="block font-semibold">{item.customer}</strong><small className="mt-1 block text-slate-600">{item.division}</small></span></button></td>
+              <td className="px-5 py-4"><button type="button" onClick={() => setHistory(item)} className="flex items-center gap-3 text-left hover:text-teal-800"><Avatar name={item.customer} /><span><strong className="block font-semibold">{item.customer}</strong><small className="mt-1 block text-slate-600">{divisionLabel(item.division)}</small></span></button></td>
               <td className="px-5 py-4"><strong className="block font-semibold">{item.referredBy?.name || "Not specified"}</strong><small className="mt-1 block text-slate-600">{item.referredBy?.company || item.leadSource || "â€”"}</small></td>
               <td className="px-5 py-4"><span className="block max-w-55 truncate" title={item.purpose}>{item.purpose}</span><small className="mt-1 block text-slate-600">{item.type}</small></td>
               <td className={`px-5 py-4 ${overdue ? "font-semibold text-rose-800" : ""}`}>{formatFollowUpDate(item.dueAt)}</td>
@@ -120,7 +120,7 @@ export default function FollowUps({ now, onChanged }) {
       <div className="p-6">
         <div className="mb-6 rounded-xl bg-teal-50 p-4 text-xs leading-6 text-slate-800">
           <strong className="block text-sm text-teal-950">{history.customer}</strong>
-          <p>{history.division} Â· Reference: {history.referredBy?.name || "Not specified"}</p>
+          <p>{divisionLabel(history.division)} Â· Reference: {history.referredBy?.name || "Not specified"}</p>
           {history.referredBy && <p>{[history.referredBy.company, history.referredBy.phone, history.referredBy.email].filter(Boolean).join(" Â· ")}</p>}
         </div>
         <ol className="space-y-5 border-l border-teal-200 pl-5">{timeline.map((entry) => <li key={entry.id}>

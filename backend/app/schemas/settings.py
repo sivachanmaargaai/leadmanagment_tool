@@ -2,9 +2,10 @@ from typing import Literal
 
 from pydantic import Field, field_validator, model_validator
 
-from app.schemas.common import ApiModel, Division, Priority
+from app.schemas.common import ApiModel, Division, DIVISION_VALUES, Priority
 
-DIVISIONS = ["MMC", "nemilink", "ClearCode Labs"]
+DIVISIONS = list(DIVISION_VALUES)
+DIVISION_PREFIXES = ["MMC", "NEM", "CCL", "ENG", "VIS", "OVW"]
 
 
 class CompanySettings(ApiModel):
@@ -79,7 +80,7 @@ class Notifications(ApiModel):
 
 class WorkspacePreferences(ApiModel):
     sidebar: Literal["Hover to expand", "Always expanded"] = "Hover to expand"
-    defaultDivision: Literal["All divisions", "MMC", "nemilink", "ClearCode Labs"] = "All divisions"
+    defaultDivision: Literal["All divisions", "MMC", "nemilink", "ClearCode Labs", "ENGEN", "Visotonics", "Overview"] = "All divisions"
     rowsPerPage: int = Field(default=10, ge=5, le=100)
     dateFormat: Literal["DD MMM YYYY", "DD/MM/YYYY", "YYYY-MM-DD"] = "DD MMM YYYY"
 
@@ -94,7 +95,9 @@ class PersonalData(ApiModel):
 class SharedData(ApiModel):
     company: CompanySettings = Field(default_factory=CompanySettings)
     divisions: dict[str, DivisionSettings] = Field(default_factory=lambda: {
-        name: DivisionSettings(name=name, prefix=prefix) for name, prefix in zip(DIVISIONS, ["MMC", "NEM", "CCL"])})
+        name: DivisionSettings(name=name, prefix=prefix)
+        for name, prefix in zip(DIVISIONS, DIVISION_PREFIXES)
+    })
     leads: LeadDefaults = Field(default_factory=LeadDefaults)
     quotation: QuotationDefaults = Field(default_factory=QuotationDefaults)
 
@@ -102,7 +105,7 @@ class SharedData(ApiModel):
     @classmethod
     def fixed_divisions(cls, value):
         if set(value) != set(DIVISIONS) or any(item.name != key for key, item in value.items()):
-            raise ValueError("Provide the existing MMC, nemilink and ClearCode Labs divisions without renaming them")
+            raise ValueError("Provide all six configured divisions with matching names")
         return value
 
 

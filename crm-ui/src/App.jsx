@@ -6,7 +6,7 @@ import LeadRegister from "./components/LeadRegister";
 import AddLeadModal from "./components/AddLeadModal";
 import { Button, Card } from "./components/ui";
 import Dashboard from "./pages/Dashboard";
-import { divisions } from "./data/crm";
+import { divisionLabel, divisions } from "./data/crm";
 import {
   createLead,
   updateLead,
@@ -176,7 +176,7 @@ function Workspace({ user, onLogout, signingOut }) {
                 >
                   <option>All divisions</option>
                   {divisions.map((name) => (
-                    <option key={name}>{name}</option>
+                    <option key={name} value={name}>{divisionLabel(name)}</option>
                   ))}
                 </select>
               </label>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Plus, X } from "lucide-react";
-import { divisions } from "../data/crm";
+import { divisionLabel, divisions } from "../data/crm";
 import { Button, IconButton } from "./ui";
 import CustomerField from "./CustomerField";
 import ReferralFields from "./ReferralFields";
@@ -126,11 +126,11 @@ export default function AddLeadModal({ onClose, onSave, saveError = "", saving =
                             Division *
                             <select
                                 name="division"
-                                defaultValue={preferences.workspace.defaultDivision === "All divisions" ? "Nemilink" : preferences.workspace.defaultDivision}
+                                defaultValue={preferences.workspace.defaultDivision === "All divisions" ? "nemilink" : preferences.workspace.defaultDivision}
                                 className={fieldClass}
                             >
                                 {divisions.map((division) => (
-                                    <option key={division}>{division}</option>
+                                    <option key={division} value={division}>{divisionLabel(division)}</option>
                                 ))}
                             </select>
                         </label>

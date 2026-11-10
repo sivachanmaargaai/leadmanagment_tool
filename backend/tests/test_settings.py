@@ -62,6 +62,9 @@ class SettingsScenarios(unittest.TestCase):
     def test_01_shared_settings_persist_and_only_owner_can_modify_them(self):
         initial = self.settings()
         self.assertTrue(initial["canManageShared"])
+        self.assertEqual(set(initial["divisions"]), {"MMC", "nemilink", "ClearCode Labs", "ENGEN", "Visotonics", "Overview"})
+        self.assertEqual({name: item["prefix"] for name, item in initial["divisions"].items()},
+                         {"MMC": "MMC", "nemilink": "NEM", "ClearCode Labs": "CCL", "ENGEN": "ENG", "Visotonics": "VIS", "Overview": "OVW"})
         divisions = initial["divisions"]
         divisions["MMC"].update(gst="QA-GST", address="QA division address", prefix="HW")
         saved = self.save({"expectedSharedVersion": 1, "company": {"name": "QA Engineering", "email": "office@example.test", "website": "https://example.test"}, "divisions": divisions})
@@ -75,6 +78,24 @@ class SettingsScenarios(unittest.TestCase):
         self.assertEqual(self.client.put("/api/settings", json={"expectedSharedVersion": 2, "leads": initial["leads"]}).status_code, 401)
         self.save({"expectedSharedVersion": 2, "company": {"name": "Invalid", "website": "javascript:bad"}}, expected=422)
         self.save({"expectedSharedVersion": 2, "divisions": {"Unknown": {"name": "MMC"}}}, expected=422)
+
+    def test_new_divisions_are_valid_for_leads_quotations_and_workspace_defaults(self):
+        initial = self.settings()
+        prefs = {**initial["workspace"], "defaultDivision": "Overview"}
+        saved = self.save({"expectedPersonalVersion": 0, "workspace": prefs})
+        self.assertEqual(saved["workspace"]["defaultDivision"], "Overview")
+
+        for division, prefix in [("ENGEN", "ENG"), ("Visotonics", "VIS"), ("Overview", "OVW")]:
+            lead = self.client.post("/api/leads", headers=self.owner_headers, json={
+                "customer": f"{division} API customer", "division": division, "description": "Division validation check",
+            })
+            self.assertEqual(lead.status_code, 201, lead.text)
+            quote = self.client.post("/api/quotations", headers=self.owner_headers, json={
+                "customer": f"{division} API customer", "division": division, "date": "2026-11-10",
+                "items": [{"description": "IoT integration", "quantity": 1, "rate": 100}],
+            })
+            self.assertEqual(quote.status_code, 201, quote.text)
+            self.assertTrue(quote.json()["number"].startswith(f"{prefix}-2026-"), quote.json()["number"])
 
     def test_02_personal_profile_preferences_are_isolated_and_password_change_revokes_sessions(self):
         initial = self.settings()

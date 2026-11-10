@@ -15,7 +15,7 @@ import {
     Eye,
     Trash2,
 } from "lucide-react";
-import { divisions } from "../data/crm";
+import { divisionLabel, divisions } from "../data/crm";
 import { getCustomersPage, getCustomerById, createCustomer, updateCustomer, deleteCustomer } from "../services/customersApi";
 import { getQuotationsPage, getQuotationById } from "../services/quotationsApi";
 import PdfViewer from "../components/quotations/PdfViewer";
@@ -108,7 +108,7 @@ function CustomerDetails({
                                     {customer.name}
                                 </h3>
                                 <p className="mt-1 text-xs text-slate-700">
-                                    {customer.type} · {customer.divisions.join(", ")}
+                                    {customer.type} · {customer.divisions.map(divisionLabel).join(", ")}
                                 </p>
                                 <div className="mt-2">
                                     <StageBadge stage={customer.stage} />
@@ -285,7 +285,7 @@ function CustomerDetails({
                                         </span>
                                     </div>
                                     <p className="mt-2 text-xs text-slate-700">
-                                        {lead.division} · {lead.priority} priority
+                                                {divisionLabel(lead.division)} · {lead.priority} priority
                                     </p>
                                     <p className="mt-2 text-[11px] text-slate-600">
                                         Lead reference: {lead.referredBy?.name || "Not specified"}
@@ -308,7 +308,7 @@ function CustomerDetails({
                                                 {quote.number}
                                             </strong>
                                             <p className="mt-1 text-xs text-slate-700">
-                                                {quote.division} · {effectiveStatus(quote)}
+                                                {divisionLabel(quote.division)} · {effectiveStatus(quote)}
                                             </p>
                                         </div>
 
@@ -486,7 +486,7 @@ export default function Customers({ onChanged }) {
                     >
                         <option>All divisions</option>
                         {divisions.map((name) => (
-                            <option key={name}>{name}</option>
+                            <option key={name} value={name}>{divisionLabel(name)}</option>
                         ))}
                     </select>
 
@@ -533,7 +533,7 @@ export default function Customers({ onChanged }) {
                             </p>
 
                             <p className="mt-2 text-[11px] leading-5 text-slate-700">
-                                {customer.divisions.join(", ")}
+                                {customer.divisions.map(divisionLabel).join(", ")}
                                 <br />
                                 Reference: {customer.referredBy?.name || "Not specified"}
                             </p>
@@ -602,7 +602,7 @@ export default function Customers({ onChanged }) {
                                         </small>
                                     </td>
                                     <td className="px-4 py-4">
-                                        {customer.divisions.join(", ")}
+                                        {customer.divisions.map(divisionLabel).join(", ")}
                                     </td>
                                     <td className="px-4 py-4">
                                         {customer.referredBy?.name || "Not specified"}

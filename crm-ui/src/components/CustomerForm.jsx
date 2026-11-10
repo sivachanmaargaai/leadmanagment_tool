@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Plus, Save, Trash2 } from "lucide-react";
-import { divisions } from "../data/crm";
+import { divisionLabel, divisions } from "../data/crm";
 import { useSettings } from "../context/SettingsContext";
 import { customerFormPayload } from "../lib/customerForm.js";
 import Modal from "./Modal";
@@ -42,7 +42,7 @@ export default function CustomerForm({ customer, onSave, onClose }) {
           <Field label="Customer / company name *"><input required autoFocus maxLength={120} className={inputClass} {...bind("name")} /></Field>
           <Field label="Customer type"><select className={inputClass} {...bind("type")}><option>Company</option><option>Individual</option></select></Field>
         </div>
-        <fieldset><legend className="mb-3 text-xs font-semibold text-slate-800">Associated divisions *</legend><div className="flex flex-wrap gap-2">{divisions.map((division) => <label key={division} className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-800"><input type="checkbox" checked={selectedDivisions.includes(division)} onChange={() => setSelectedDivisions((current) => current.includes(division) ? current.filter((value) => value !== division) : [...current, division])} className="accent-teal-800" />{division}</label>)}</div></fieldset>
+        <fieldset><legend className="mb-3 text-xs font-semibold text-slate-800">Associated divisions *</legend><div className="flex flex-wrap gap-2">{divisions.map((division) => <label key={division} className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-800"><input type="checkbox" checked={selectedDivisions.includes(division)} onChange={() => setSelectedDivisions((current) => current.includes(division) ? current.filter((value) => value !== division) : [...current, division])} className="accent-teal-800" />{divisionLabel(division)}</label>)}</div></fieldset>
         <section className="space-y-3"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-bold">Contact persons</h3><Button variant="secondary" onClick={() => setContacts((current) => [...current, emptyContact()])}><Plus size={15} />Add contact</Button></div>
           {contacts.map((contact, index) => <div key={index} className="rounded-xl border border-slate-200 bg-slate-50 p-3 shadow-sm"><div className="mb-3 flex items-center justify-between gap-2"><h4 className="text-xs font-semibold">{index === 0 ? "Primary contact" : `Contact ${index + 1}`}</h4>{index > 0 && <IconButton aria-label={`Remove contact ${index + 1}`} onClick={() => setContacts((current) => current.filter((_, i) => i !== index))}><Trash2 size={15} /></IconButton>}</div><div className="grid gap-3 sm:grid-cols-2">{[["name", "Name", 120, "text"], ["designation", "Designation", 120, "text"], ["phone", "Phone", 30, "tel"], ["email", "Email", 254, "email"]].map(([key, label, maxLength, type]) => <Field key={key} label={label}><input type={type} maxLength={maxLength} className={inputClass} value={contact[key] || ""} onChange={(event) => updateContact(index, key, event.target.value)} /></Field>)}</div></div>)}
           <p className="text-xs leading-5 text-slate-600">Enter a phone number or email for the primary contact.</p>

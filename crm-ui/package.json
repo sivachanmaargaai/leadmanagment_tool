@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test": "node --test src/lib/followUps.test.js src/services/*.test.js",
+    "test": "node --test src/data/*.test.js src/lib/followUps.test.js src/services/*.test.js",
     "test:ui": "playwright test",
     "build": "vite build",
     "lint": "eslint .",

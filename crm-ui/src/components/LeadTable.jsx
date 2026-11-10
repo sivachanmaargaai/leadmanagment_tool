@@ -1,5 +1,6 @@
 import usePagination from "../hooks/usePagination";
 import Pagination from "./Pagination";
+import { divisionLabel } from "../data/crm";
 
 import { useState } from "react";
 import {
@@ -138,7 +139,7 @@ export default function LeadTable({
         [
             lead.customer,
             lead.contact,
-            lead.division,
+            divisionLabel(lead.division),
             lead.description,
             lead.status,
             lead.priority,
@@ -243,7 +244,7 @@ export default function LeadTable({
                                 </dt>
 
                                 <dd className="text-right font-medium text-slate-900">
-                                    {lead.division}
+                                    {divisionLabel(lead.division)}
                                 </dd>
                             </div>
 
@@ -404,7 +405,7 @@ export default function LeadTable({
 
                                 {/* DIVISION */}
                                 <td className="px-5 py-4 font-medium text-slate-800">
-                                    {lead.division}
+                                    {divisionLabel(lead.division)}
                                 </td>
 
                                 {/* REFERRED BY */}

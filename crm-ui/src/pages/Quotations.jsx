@@ -14,7 +14,7 @@ import {
     Pencil,
     Trash2,
 } from "lucide-react";
-import { divisions } from "../data/crm";
+import { divisionLabel, divisions } from "../data/crm";
 import {
     Button,
     Card,
@@ -196,7 +196,7 @@ export default function Quotations({ onChanged }) {
                     >
                         <option>All divisions</option>
                         {divisions.map((name) => (
-                            <option key={name}>{name}</option>
+                            <option key={name} value={name}>{divisionLabel(name)}</option>
                         ))}
                     </select>
 
@@ -231,7 +231,7 @@ export default function Quotations({ onChanged }) {
                                 <div className="min-w-0"><strong className="block break-words text-sm text-slate-950">{quote.customer}</strong><p className="mt-1 break-all text-[11px] font-medium text-teal-800">{quote.number}</p></div>
                                 <select aria-label={`Status for ${quote.number}`} value={effectiveStatus(quote)} disabled={busyId !== null} onChange={(event) => changeStatus(quote, event.target.value)} className={selectClass}>{quoteStatuses.map((name) => <option key={name}>{name}</option>)}</select>
                             </div>
-                            <dl className="mt-3 space-y-1.5 text-[11px] text-slate-700"><div className="flex justify-between gap-3"><dt>Division</dt><dd className="font-semibold text-slate-900">{quote.division}</dd></div><div className="flex justify-between gap-3"><dt>Valid until</dt><dd>{displayDate(quote.validUntil)}</dd></div></dl>
+                            <dl className="mt-3 space-y-1.5 text-[11px] text-slate-700"><div className="flex justify-between gap-3"><dt>Division</dt><dd className="font-semibold text-slate-900">{divisionLabel(quote.division)}</dd></div><div className="flex justify-between gap-3"><dt>Valid until</dt><dd>{displayDate(quote.validUntil)}</dd></div></dl>
                             <div className="my-3 rounded-lg bg-teal-50 p-2.5">{billingTypes.filter((billing) => quote.totals[billing]).map((billing) => <p key={billing} className="flex flex-wrap justify-between gap-2 text-xs leading-6 text-teal-950"><span>{billing}</span><strong>{money(quote.totals[billing].total, quote.currency)}</strong></p>)}</div>
                             <div className="flex items-center justify-between gap-2 border-t border-slate-100 pt-2"><span className="text-[10px] text-slate-600">{quote.versionCount ?? quote.versions.length} version(s)</span><div className="flex gap-1">
                                 <IconButton aria-label={`Edit ${quote.number}`} disabled={busyId !== null} onClick={() => edit(quote)}><Pencil size={17} /></IconButton>
@@ -281,7 +281,7 @@ export default function Quotations({ onChanged }) {
                                             {quote.customer}
                                         </td>
 
-                                        <td className="px-5 py-4">{quote.division}</td>
+                                        <td className="px-5 py-4">{divisionLabel(quote.division)}</td>
 
                                         <td className="px-5 py-4">
                                             <span className="block">{displayDate(quote.date)}</span>
