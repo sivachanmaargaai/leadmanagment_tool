@@ -1,5 +1,7 @@
 # Docker Hub release — 2026-11-06
 
+> Historical release record. The images documented here were built at migration head `20261106_0015`; the current source head is `20261110_0017`. Build and deploy both services from the current source before using the new division migrations.
+
 Both existing v1.1 tags were rebuilt from the current workspace and pushed to the user's existing Docker Hub repositories, as explicitly requested. No v1.2 tag was created. Docker Hub manifests were queried after the pushes and matched the local build outputs.
 
 | Image | Published manifest digest |
@@ -16,7 +18,7 @@ The same backend v1.1 tag was subsequently rebuilt/pushed with the packaged ENGE
 ## Container verification
 
 - Linux amd64 builds succeeded; the frontend production build ran in its real Node build stage.
-- Backend container starts Uvicorn and serves health/OpenAPI, includes the OTP verification route, and contains migration head 20261106_0015.
+- Backend container starts Uvicorn and serves health/OpenAPI, includes the OTP verification route, and contained migration head 20261106_0015 when this release was built.
 - Local .env/.env.local files and nested .bak source backups are absent from the final backend image. Nested backup/archive exclusions were added to backend/.dockerignore.
 - Frontend Nginx startup/template substitution and `nginx -t` pass with API_UPSTREAM_HOST supplied. HTTP index/assets include the new OTP frontend flow.
 - Disposable smoke containers used no real database or mailbox credentials and were removed afterward.
@@ -25,6 +27,6 @@ The same backend v1.1 tag was subsequently rebuilt/pushed with the packaged ENGE
 
 ## Render follow-up
 
-Pull and redeploy the latest images for BOTH existing services; the tag names remain unchanged. Ensure the frontend service has API_UPSTREAM_HOST set to the actual backend hostname without a scheme/path. Retain the configured Gmail variables and MAIL_PROVIDER=gmail / PASSWORD_RECOVERY_ENABLED=true on the backend service only. Confirm migration head 20261106_0015 before using recovery.
+Build and redeploy both services from the current source. Ensure the frontend service has API_UPSTREAM_HOST set to the actual backend hostname without a scheme/path. Retain the configured Gmail variables and MAIL_PROVIDER=gmail / PASSWORD_RECOVERY_ENABLED=true on the backend service only. Confirm migration head 20261110_0017 before using recovery and the expanded division set.
 
 The Docker operations pushed images without invoking a Render redeploy, changing Render environment variables, sending further emails, or modifying CRM accounts. The subsequent logo/source release includes the separately requested GitHub synchronization. Any existing auto-deploy hooks were not inspected. Live readiness requires checking the deployed services after the image pull.

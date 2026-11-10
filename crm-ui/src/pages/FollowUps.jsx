@@ -41,7 +41,7 @@ export default function FollowUps({ now, onChanged }) {
 
   return <div className="space-y-4">
     <div className="flex flex-wrap items-center justify-between gap-4">
-      <p className="max-w-xl text-xs leading-6 text-slate-700">Plan the next conversation. Track who introduced the customer.<br />All times are IST Â· Records are saved to the database.</p>
+      <p className="max-w-xl text-xs leading-6 text-slate-700">Plan the next conversation. Track who introduced the customer.<br />All times are IST · Records are saved to the database.</p>
       <Button disabled={loading || Boolean(storageError)} onClick={() => setEditor({ mode: "schedule" })}><Plus size={17} />Schedule follow-up</Button>
     </div>
 
@@ -82,7 +82,7 @@ export default function FollowUps({ now, onChanged }) {
             <p className="my-3 break-words text-xs font-medium leading-5 text-slate-900">{item.purpose}</p>
             <p className={`flex items-start gap-2 text-[11px] leading-5 ${overdue ? "font-semibold text-rose-800" : "text-slate-700"}`}><CalendarClock size={14} className="mt-0.5 shrink-0" />{formatFollowUpDate(item.dueAt)} IST</p>
             <dl className="mt-3 space-y-1.5 text-[11px]"><div className="flex justify-between gap-3"><dt className="shrink-0 text-slate-600">Referred by</dt><dd className="min-w-0 break-words text-right font-semibold text-teal-900">{item.referredBy?.name || "Not specified"}</dd></div><div className="flex justify-between gap-3"><dt className="text-slate-600">Assigned to</dt><dd className="min-w-0 break-words text-right text-slate-900">{item.assignedTo}</dd></div></dl>
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2"><span className={`text-[11px] font-semibold ${item.priority === "High" ? "text-rose-800" : "text-slate-700"}`}>{item.priority} Â· {item.type}</span><div className="flex gap-1">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2"><span className={`text-[11px] font-semibold ${item.priority === "High" ? "text-rose-800" : "text-slate-700"}`}>{item.priority} · {item.type}</span><div className="flex gap-1">
               {item.status === "Pending" && <><IconButton aria-label={`Complete ${item.purpose}`} onClick={() => setEditor({ mode: "complete", record: item })}><Check size={17} /></IconButton><IconButton aria-label={`Reschedule ${item.purpose}`} onClick={() => setEditor({ mode: "reschedule", record: item })}><RefreshCw size={16} /></IconButton></>}
               <IconButton aria-label={`History for ${item.customer}`} onClick={() => setHistory(item)}><History size={17} /></IconButton>
             </div></div>
@@ -91,12 +91,12 @@ export default function FollowUps({ now, onChanged }) {
       </div>
       <div className="hidden overflow-x-auto lg:block">
         <table className="w-full whitespace-nowrap text-left">
-          <thead className="border-y border-slate-200 bg-slate-50 text-[10px] uppercase tracking-wide text-slate-700"><tr>{["Customer", "Referred by", "Purpose", "Date & time Â· IST", "Assigned to", "Priority", "Status", "Actions"].map((name) => <th key={name} className="px-5 py-3">{name}</th>)}</tr></thead>
+          <thead className="border-y border-slate-200 bg-slate-50 text-[10px] uppercase tracking-wide text-slate-700"><tr>{["Customer", "Referred by", "Purpose", "Date & time · IST", "Assigned to", "Priority", "Status", "Actions"].map((name) => <th key={name} className="px-5 py-3">{name}</th>)}</tr></thead>
           <tbody className="divide-y divide-slate-100">{pageRows.map((item) => {
             const overdue = isOverdue(item, now);
             return <tr key={item.id} className={`text-xs text-slate-800 transition-colors ${overdue ? "bg-rose-50/40 hover:bg-rose-50" : "hover:bg-teal-50/40"}`}>
               <td className="px-5 py-4"><button type="button" onClick={() => setHistory(item)} className="flex items-center gap-3 text-left hover:text-teal-800"><Avatar name={item.customer} /><span><strong className="block font-semibold">{item.customer}</strong><small className="mt-1 block text-slate-600">{divisionLabel(item.division)}</small></span></button></td>
-              <td className="px-5 py-4"><strong className="block font-semibold">{item.referredBy?.name || "Not specified"}</strong><small className="mt-1 block text-slate-600">{item.referredBy?.company || item.leadSource || "â€”"}</small></td>
+              <td className="px-5 py-4"><strong className="block font-semibold">{item.referredBy?.name || "Not specified"}</strong><small className="mt-1 block text-slate-600">{item.referredBy?.company || item.leadSource || "—"}</small></td>
               <td className="px-5 py-4"><span className="block max-w-55 truncate" title={item.purpose}>{item.purpose}</span><small className="mt-1 block text-slate-600">{item.type}</small></td>
               <td className={`px-5 py-4 ${overdue ? "font-semibold text-rose-800" : ""}`}>{formatFollowUpDate(item.dueAt)}</td>
               <td className="px-5 py-4">{item.assignedTo}</td>
@@ -111,17 +111,17 @@ export default function FollowUps({ now, onChanged }) {
         </table>
       </div>
       {!pageRows.length && <EmptyState icon={CalendarClock} title={pagination.total ? "No matching follow-ups" : "Your next conversation starts here"} description={pagination.total ? "Try another view, date or reference name." : "Schedule a follow-up against a lead. Its reference contact will appear automatically."} />}
-      <footer className="border-t border-slate-200 px-5 py-4 text-xs text-slate-600">{pagination.total} matching follow-up(s) Â· Today includes overdue tasks due today.</footer>
+      <footer className="border-t border-slate-200 px-5 py-4 text-xs text-slate-600">{pagination.total} matching follow-up(s) · Today includes overdue tasks due today.</footer>
     </Card>
 
     <Pagination pagination={pagination} />
     {editor && <FollowUpEditor mode={editor.mode} record={editor.record} onClose={() => setEditor(null)} onSave={save} />}
-    {history && <Modal title={`${history.customer} Â· Task history`} onClose={() => setHistory(null)}>
+    {history && <Modal title={`${history.customer} · Task history`} onClose={() => setHistory(null)}>
       <div className="p-6">
         <div className="mb-6 rounded-xl bg-teal-50 p-4 text-xs leading-6 text-slate-800">
           <strong className="block text-sm text-teal-950">{history.customer}</strong>
-          <p>{divisionLabel(history.division)} Â· Reference: {history.referredBy?.name || "Not specified"}</p>
-          {history.referredBy && <p>{[history.referredBy.company, history.referredBy.phone, history.referredBy.email].filter(Boolean).join(" Â· ")}</p>}
+          <p>{divisionLabel(history.division)} · Reference: {history.referredBy?.name || "Not specified"}</p>
+          {history.referredBy && <p>{[history.referredBy.company, history.referredBy.phone, history.referredBy.email].filter(Boolean).join(" · ")}</p>}
         </div>
         <ol className="space-y-5 border-l border-teal-200 pl-5">{timeline.map((entry) => <li key={entry.id}>
           <p className="text-[11px] font-semibold text-teal-800">{formatFollowUpDate(entry.at)} IST</p>

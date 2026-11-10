@@ -273,7 +273,7 @@ export default function Quotations({ onChanged }) {
                                                 {quote.number}
                                             </strong>
                                             <small className="mt-1 block text-slate-600">
-                                                {quote.source} Â· {quote.versionCount ?? quote.versions.length} version(s)
+                                                {quote.source} · {quote.versionCount ?? quote.versions.length} version(s)
                                             </small>
                                         </td>
 

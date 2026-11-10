@@ -126,7 +126,7 @@ function Workspace({ user, onLogout, signingOut }) {
         canViewQuotations={canQuotes}
         alwaysExpanded={preferences.workspace.sidebar === "Always expanded"}
         onNavigate={navigate}
-        leadCount={data?.metrics?.leads.total ?? "�"}
+        leadCount={data?.metrics?.leads.total ?? "…"}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />

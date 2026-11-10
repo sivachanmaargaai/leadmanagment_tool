@@ -1,8 +1,8 @@
 # ENGEN CRM API
 
-## Current release - 2026-11-06
+## Current source state - 2026-11-10
 
-Email OTP recovery and Gmail API delivery are implemented and verified; the user confirmed the deployed reset flow works. Backend/frontend source must be released together. Database migration head is `20261106_0015`. See [current recovery behavior](audit/PASSWORD-RECOVERY-REPORT.md) and [remaining work](audit/PENDING-WORK-REVIEW-20261106.md); earlier counts and pending lists below are historical implementation notes.
+Email OTP recovery and Gmail API delivery are implemented and verified; the user confirmed the deployed reset flow works. Backend/frontend source must be released together. Database migration head is `20261110_0017`. See [current recovery behavior](audit/PASSWORD-RECOVERY-REPORT.md) and [remaining work](audit/PENDING-WORK-REVIEW-20261106.md); earlier counts and pending lists below are historical implementation notes.
 
 Quotation PDFs use the packaged backend asset `app/assets/engen-logo.png`, copied unchanged from the ENGEN frontend logo. The backend Docker build includes it without depending on a frontend directory. The existing show-logo toggle and company-text fallback remain supported. Only newly generated PDFs/revisions use this asset; previously stored PDF bytes remain unchanged. Tests verify logo embedding on every page, disabled-logo rendering and the missing-asset fallback.
 
@@ -81,7 +81,7 @@ These account rules do not yet restrict staff to assigned CRM leads. Users can e
 
 ## Persistent Settings and connected defaults
 
-GET `/api/settings` returns the signed-in user's profile/preferences plus shared company, divisions, lead and quotation defaults. PUT `/api/settings` saves versioned changes; GET `/api/settings/divisions` returns the three fixed divisions. All require login. Migration `20261104_0006` adds singleton `workspace_settings` and user-keyed `user_preferences`. Old localStorage settings are preserved but are not imported automatically; review and enter needed values in Settings. Settings now follow a login across devices. Refresh/reload saved settings to receive changes made from another device.
+GET `/api/settings` returns the signed-in user's profile/preferences plus shared company, divisions, lead and quotation defaults. PUT `/api/settings` saves versioned changes; GET `/api/settings/divisions` returns the six fixed divisions: MMC, nemilink, ClearCode Labs, ENGEN, Visotonics and Overview. All require login. Migration `20261104_0006` adds singleton `workspace_settings` and user-keyed `user_preferences`. Old localStorage settings are preserved but are not imported automatically; review and enter needed values in Settings. Settings now follow a login across devices. Refresh/reload saved settings to receive changes made from another device.
 
 - Owner: edits company/division details and business defaults. Other users can read them but cannot change them, including through direct API calls.
 - Each user: edits their own display name, phone, designation, in-app alert preferences and workspace display preferences. Login email is read-only here. Roles/passwords are never accepted by the profile Settings payload.
@@ -92,7 +92,7 @@ GET `/api/settings` returns the signed-in user's profile/preferences plus shared
 - Sidebar mode/default division apply to the user's workspace; display date formats apply to follow-ups, quotations and report timestamps. Rows per page applies to the main CRM registers and report tables; it is client-side pagination, not the future backend traffic/pagination work.
 - In-app toggles filter high-priority lead alerts, upcoming/overdue task reminders and Sent/Expired quotation alerts. Quote expiry considers the next two days and already expired quotes. Sound requires a browser interaction/audio support. CRM must stay open; background email/WhatsApp/push delivery is not implemented. The old unsupported lead-assignment toggle is replaced with the actually supported priority-alert toggle.
 
-Product catalogue management, arbitrary division creation/renaming, custom logo uploads, digital signatures, background delivery and public production hardening are outside these existing Settings fields. Business schemas still use MMC/nemilink/ClearCode Labs. The app blocks data entry if initial Settings cannot load rather than silently applying defaults after a server error.
+Product catalogue management, arbitrary division creation/renaming, custom logo uploads, digital signatures, background delivery and public production hardening are outside these existing Settings fields. Business schemas use MMC, nemilink, ClearCode Labs, ENGEN, Visotonics and Overview. The app blocks data entry if initial Settings cannot load rather than silently applying defaults after a server error.
 
 Follow-ups has seven endpoints under `/api/follow-ups`: POST/GET collection, GET/PUT/DELETE by ID, GET `/upcoming`, GET `/overdue`. Completion and an optional next task are committed atomically by PUT; its response is `{record, nextFollowUp}`. Send `expectedVersion` to reject stale edits. History is generated by the server. DELETE archives the task, and linked lead deletion is blocked to retain history. Upcoming means pending tasks at or after the current instant, including later today; the UI's Upcoming tab means dates after today in IST.
 
@@ -154,7 +154,7 @@ Password recovery now uses an email OTP: `POST /api/auth/forgot-password` return
 
 For Render, set `MAIL_PROVIDER=gmail`, `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_SENDER=engenwebsite@gmail.com`, and `PASSWORD_RECOVERY_ENABLED=true` only after configuration and migrations. Gmail uses HTTPS OAuth token refresh and the Gmail API, without SMTP ports or a Gmail account password. Store secrets in backend Render Environment; local development uses `backend/.env.local`. Never put these values in frontend variables or Git. Google OAuth Testing mode issues Gmail refresh tokens that expire after seven days; configure production publishing and any applicable verification requirements before live use.
 
-Migrate before starting the new backend: `python -m alembic upgrade head`. Migration `20261106_0014` adds OTP metadata; `20261106_0015` safely aligns legacy lead customer name columns with the 120-character model. Follow-up verification: `python -B scripts/verify_password_recovery.py` uses mocked mail and disposable QA schemas, verifies migration/account preservation, single-use reset and PostgreSQL concurrency. It sends no real email and does not reset real accounts.
+Migrate before starting the new backend: `python -m alembic upgrade head`. Migration `20261106_0014` adds OTP metadata; `20261106_0015` safely aligns legacy lead customer name columns with the 120-character model; `20261110_0016` adds ENGEN, Visotonics and Overview settings defaults; and `20261110_0017` normalizes the historical `Nemilinks` lead division value to `nemilink`. Follow-up verification: `python -B scripts/verify_password_recovery.py` uses mocked mail and disposable QA schemas, verifies migration/account preservation, single-use reset and PostgreSQL concurrency. It sends no real email and does not reset real accounts.
 
 See [recovery configuration, checks and limitations](audit/PASSWORD-RECOVERY-REPORT.md). Email delivery uses an in-process FastAPI background task, not a durable worker. Real Gmail delivery and the deployed HTTPS flow still need an explicit smoke test after release configuration.
 
